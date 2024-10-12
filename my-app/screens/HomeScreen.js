@@ -1,6 +1,7 @@
-import React, { useState } from 'react';  // Import useState here
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import Checkbox from 'expo-checkbox'; 
+import { TextInput } from 'react-native-gesture-handler';
 
 export default function HomeScreen({ navigation }) {
     // State for tasks
@@ -16,6 +17,10 @@ export default function HomeScreen({ navigation }) {
             task.id === id ? { ...task, completed: !task.completed } : task
         ));
     };
+
+    // State for mood selection
+    const [selectedMood, setSelectedMood] = useState(null);  // Track selected mood
+    const [notes, setNotes] = useState('');  // Track notes
 
     return (
         <View style={styles.homeContainer}>
@@ -44,13 +49,67 @@ export default function HomeScreen({ navigation }) {
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Mood</Text>
                 <View style={styles.moodOptions}>
-                    <Text>O</Text>
-                    <Text>O</Text>
-                    <Text>O</Text>
-                    <Text>O</Text>
-                    <Text>O</Text>
+                    <TouchableOpacity onPress={() => setSelectedMood('VeryHappy')}>
+                        {/* Image 5.png (VeryHappy) */}
+                        <Image 
+                            source={require('../icons/5.png')} 
+                            style={[
+                                styles.icon, 
+                                selectedMood === 'VeryHappy' && styles.selectedIcon
+                            ]}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setSelectedMood('Happy')}>
+                        {/* Image 4.png (Happy) */}
+                        <Image 
+                            source={require('../icons/4.png')} 
+                            style={[
+                                styles.icon, 
+                                selectedMood === 'Happy' && styles.selectedIcon
+                            ]}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setSelectedMood('Neutral')}>
+                        {/* Image 3.png (Neutral) */}
+                        <Image 
+                            source={require('../icons/3.png')} 
+                            style={[
+                                styles.icon, 
+                                selectedMood === 'Neutral' && styles.selectedIcon
+                            ]}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setSelectedMood('Sad')}>
+                        {/* Image 2.png (Sad) */}
+                        <Image 
+                            source={require('../icons/2.png')} 
+                            style={[
+                                styles.icon, 
+                                selectedMood === 'Sad' && styles.selectedIcon
+                            ]}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setSelectedMood('VerySad')}>
+                        {/* Image 1.png (VerySad) */}
+                        <Image 
+                            source={require('../icons/1.png')} 
+                            style={[
+                                styles.icon, 
+                                selectedMood === 'VerySad' && styles.selectedIcon
+                            ]}
+                        />
+                    </TouchableOpacity>
                 </View>
-                <Text>Notes: Selection: {/** Add any logic here */}</Text>
+
+                {/* Notes Section */}
+                <Text>Notes</Text>
+                <TextInput
+                    style={styles.textBox}
+                    multiline
+                    placeholder="Write your notes here..."
+                    value={notes}
+                    onChangeText={(text) => setNotes(text)} 
+                />
             </View>
 
             {/* Menstrual Section */}
@@ -117,6 +176,22 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginVertical: 10,
+    },
+    icon: {
+        width: 50,  // Default size
+        height: 50, // Default size
+    },
+    selectedIcon: {
+        width: 70,  // Larger size when selected
+        height: 70, // Larger size when selected
+    },
+    textBox: {
+        height: 100,
+        borderColor: 'gray',
+        borderWidth: 1,
+        padding: 10,
+        borderRadius: 5,
+        textAlignVertical: 'top',  // For proper multiline behavior
     },
     menstrualOptions: {
         flexDirection: 'row',
