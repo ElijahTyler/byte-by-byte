@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView } from 'react-native';
 import Checkbox from 'expo-checkbox'; 
-import { TextInput } from 'react-native-gesture-handler';
 
 export default function HomeScreen({ navigation }) {
     // State for tasks
@@ -9,6 +8,13 @@ export default function HomeScreen({ navigation }) {
         { id: 1, title: 'Take a walk', completed: false },
         { id: 2, title: 'Run for 3 miles', completed: false },
         { id: 3, title: 'Bicep curls 15 reps', completed: false }
+    ]);
+
+    // State for ingredients
+    const [ing, setIng] = useState([
+        { id: 1, title: 'milk', completed: false },
+        { id: 2, title: 'bread', completed: false },
+        { id: 3, title: 'eggs', completed: false }
     ]);
 
     // Function to toggle task completion
@@ -22,115 +28,163 @@ export default function HomeScreen({ navigation }) {
     const [selectedMood, setSelectedMood] = useState(null);  // Track selected mood
     const [notes, setNotes] = useState('');  // Track notes
 
+    // State for menstrual section selection
+    const [menstrualSelection, setMenstrualSelection] = useState(null);  // Track Yes or No
+
+    // Function to toggle the ingredients consumed today
+    const toggleIng = (id) => {
+        setIng(ing.map(item =>
+            item.id === id ? { ...item, completed: !item.completed } : item
+        ));
+    };
+
     return (
-        <View style={styles.homeContainer}>
-            {/* App header */}
-            <View style={styles.header}>
-            </View>
+        <ScrollView style={styles.scrollView}>
+            <View style={styles.homeContainer}>
+                {/* App header */}
+                <View style={styles.header}>
+                </View>
 
-            {/* Fitness Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Fitness</Text>
-                {tasks.map(task => (
-                    <View key={task.id} style={styles.taskContainer}>
-                        <Checkbox
-                            value={task.completed}
-                            onValueChange={() => toggleTask(task.id)}
-                            style={styles.checkbox}
-                        />
-                        <Text style={[styles.taskText, task.completed && styles.strikeThrough]}>
-                            {task.title}
-                        </Text>
+                {/* Fitness Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Fitness</Text>
+                    {tasks.map(task => (
+                        <View key={task.id} style={styles.taskContainer}>
+                            <Checkbox
+                                value={task.completed}
+                                onValueChange={() => toggleTask(task.id)}
+                                style={styles.checkbox}
+                            />
+                            <Text style={[styles.taskText, task.completed && styles.strikeThrough]}>
+                                {task.title}
+                            </Text>
+                        </View>
+                    ))}
+                </View>
+
+                {/* Mood Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Mood</Text>
+                    <View style={styles.moodOptions}>
+                        <TouchableOpacity onPress={() => setSelectedMood('VeryHappy')}>
+                            <Image 
+                                source={require('../icons/5.png')} 
+                                style={[
+                                    styles.icon, 
+                                    selectedMood === 'VeryHappy' && styles.selectedIcon
+                                ]}
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setSelectedMood('Happy')}>
+                            <Image 
+                                source={require('../icons/4.png')} 
+                                style={[
+                                    styles.icon, 
+                                    selectedMood === 'Happy' && styles.selectedIcon
+                                ]}
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setSelectedMood('Neutral')}>
+                            <Image 
+                                source={require('../icons/3.png')} 
+                                style={[
+                                    styles.icon, 
+                                    selectedMood === 'Neutral' && styles.selectedIcon
+                                ]}
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setSelectedMood('Sad')}>
+                            <Image 
+                                source={require('../icons/2.png')} 
+                                style={[
+                                    styles.icon, 
+                                    selectedMood === 'Sad' && styles.selectedIcon
+                                ]}
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setSelectedMood('VerySad')}>
+                            <Image 
+                                source={require('../icons/1.png')} 
+                                style={[
+                                    styles.icon, 
+                                    selectedMood === 'VerySad' && styles.selectedIcon
+                                ]}
+                            />
+                        </TouchableOpacity>
                     </View>
-                ))}
-            </View>
 
-            {/* Mood Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Mood</Text>
-                <View style={styles.moodOptions}>
-                    <TouchableOpacity onPress={() => setSelectedMood('VeryHappy')}>
-                        {/* Image 5.png (VeryHappy) */}
-                        <Image 
-                            source={require('../icons/5.png')} 
-                            style={[
-                                styles.icon, 
-                                selectedMood === 'VeryHappy' && styles.selectedIcon
-                            ]}
-                        />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setSelectedMood('Happy')}>
-                        {/* Image 4.png (Happy) */}
-                        <Image 
-                            source={require('../icons/4.png')} 
-                            style={[
-                                styles.icon, 
-                                selectedMood === 'Happy' && styles.selectedIcon
-                            ]}
-                        />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setSelectedMood('Neutral')}>
-                        {/* Image 3.png (Neutral) */}
-                        <Image 
-                            source={require('../icons/3.png')} 
-                            style={[
-                                styles.icon, 
-                                selectedMood === 'Neutral' && styles.selectedIcon
-                            ]}
-                        />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setSelectedMood('Sad')}>
-                        {/* Image 2.png (Sad) */}
-                        <Image 
-                            source={require('../icons/2.png')} 
-                            style={[
-                                styles.icon, 
-                                selectedMood === 'Sad' && styles.selectedIcon
-                            ]}
-                        />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setSelectedMood('VerySad')}>
-                        {/* Image 1.png (VerySad) */}
-                        <Image 
-                            source={require('../icons/1.png')} 
-                            style={[
-                                styles.icon, 
-                                selectedMood === 'VerySad' && styles.selectedIcon
-                            ]}
-                        />
-                    </TouchableOpacity>
+                    {/* Notes Section */}
+                    <Text>Notes</Text>
+                    <TextInput
+                        style={styles.textBox}
+                        multiline
+                        placeholder="Write your notes here..."
+                        value={notes}
+                        onChangeText={(text) => setNotes(text)} 
+                    />
                 </View>
 
-                {/* Notes Section */}
-                <Text>Notes</Text>
-                <TextInput
-                    style={styles.textBox}
-                    multiline
-                    placeholder="Write your notes here..."
-                    value={notes}
-                    onChangeText={(text) => setNotes(text)} 
-                />
-            </View>
+                {/* Menstrual Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Menstrual</Text>
+                    <View style={styles.menstrualOptions}>
+                        <TouchableOpacity
+                            style={[
+                                styles.radioButton,
+                                menstrualSelection === 'Yes' && styles.selectedRadioButton,
+                            ]}
+                            onPress={() => setMenstrualSelection('Yes')}
+                        >
+                            <Text>Yes</Text>
+                        </TouchableOpacity>
 
-            {/* Menstrual Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Menstrual</Text>
-                <View style={styles.menstrualOptions}>
-                    <Text>Yes</Text>
-                    <Text>No</Text>
+                        <TouchableOpacity
+                            style={[
+                                styles.radioButton,
+                                menstrualSelection === 'No' && styles.selectedRadioButton,
+                            ]}
+                            onPress={() => setMenstrualSelection('No')}
+                        >
+                            <Text>No</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Meal Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Ingredients Consumed Today</Text>
+                    {ing.map(item => (
+                        <View key={item.id} style={styles.taskContainer}>
+                            <Checkbox
+                                value={item.completed}
+                                onValueChange={() => toggleIng(item.id)}
+                                style={styles.checkbox}
+                            />
+                            <Text style={[styles.taskText, item.completed && styles.strikeThrough]}>
+                                {item.title}
+                            </Text>
+                        </View>
+                    ))}
+                </View>
+                {/*add back and next buttons */}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => alert('Coming soon')}>
+                        <Text>Back</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => alert('Coming soon')}>
+                        <Text>Next</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
-
-            {/* Meal Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Meal</Text>
-                <Text>Check list of what I've eaten</Text>
-            </View>
-        </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
+    scrollView: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+    },
     homeContainer: {
         flex: 1,
         padding: 20,
@@ -178,12 +232,12 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     icon: {
-        width: 50,  // Default size
-        height: 50, // Default size
+        width: 40,  // Default size
+        height: 40, // Default size
     },
     selectedIcon: {
-        width: 70,  // Larger size when selected
-        height: 70, // Larger size when selected
+        width: 60,  // Larger size when selected
+        height: 60, // Larger size when selected
     },
     textBox: {
         height: 100,
@@ -195,7 +249,23 @@ const styles = StyleSheet.create({
     },
     menstrualOptions: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
         marginVertical: 10,
+    },
+    radioButton: {
+        borderWidth: 2,
+        borderColor: 'gray',
+        borderRadius: 10,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    selectedRadioButton: {
+        backgroundColor: 'blue',  // Change background color to indicate selection
+    },
+    radioText: {
+        color: 'white',  // White text for better contrast when selected
+        fontWeight: 'bold',
     },
 });
