@@ -3,33 +3,40 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import HomeScreen from './screens/HomeScreen';  // Import HomeScreen
-import { View, Text, TouchableOpacity } from 'react-native';
-import SvgUri from 'react-native-svg-uri';
+import Settings from './screens/Settings';  // Import SettingsScreen
+import CrisisScreen from './screens/CrisisScreen';  // Import CrisisScreen
+import MonthScreen from './screens/MonthScreen';  // Import MonthScreen
+import FitnessSet from './screens/FitnessSet';
+import MealAdd from './screens/MealAdd';
 
-
-
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 
 const Stack = createStackNavigator();
 
 function CustomHeader({ navigation }) {
   return (
     <View style={styles.header}>
-      <Text style={styles.title}>Byte by Byte</Text>
+      {/* Crisis Button (Alert Icon) */}
       <TouchableOpacity onPress={() => navigation.navigate('CrisisScreen')}>
-        <SvgUri width="24" height="24" uri="../icons/alert-triangle.svg" />
+        <Image source={require('./icons/alert.png')} style={styles.icon} />
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('SettingsScreen')}>
-        <SvgUri width="24" height="24" uri="../icons/sliders.svg" />
+      {/* App Title takes you to home screen as well */}
+      <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+        <Text style={styles.title}>Byte by Byte</Text>
       </TouchableOpacity>
+      {/* Tabs (Day, Week, Month) */}
       <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('Home')}>
         <Text>Day</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.tab}>
-        <Text>Week</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.tab}>
+      <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('MonthScreen')}>
         <Text>Month</Text>
       </TouchableOpacity>
+      {/* Settings Button (Settings Icon) */}
+      <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+        <Image source={require('./icons/settings.png')} style={styles.icon} />
+      </TouchableOpacity>
+
+      
     </View>
   );
 }
@@ -37,16 +44,45 @@ function CustomHeader({ navigation }) {
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          header: (props) => <CustomHeader {...props} />,  // Apply custom header to all screens
+        }}
+      >
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ header: (props) => <CustomHeader {...props} /> }}
-        />
-        {/* Add more screens here if needed */}
+        <Stack.Screen name="Settings" component={Settings} />
+        <Stack.Screen name="CrisisScreen" component={CrisisScreen} />
+        <Stack.Screen name="MonthScreen" component={MonthScreen} />
+        <Stack.Screen name="FitnessSet" component={FitnessSet} />
+        <Stack.Screen name="MealAdd" component={MealAdd} />
+        {/* Add more screens here as needed */}
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingTop: 40,
+    paddingBottom: 10,  
+    backgroundColor: '#BDD9BF',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    marginHorizontal: 10,  // Adjust spacing between icons
+  },
+  tab: {
+    marginLeft: 10,
+  },
+});
