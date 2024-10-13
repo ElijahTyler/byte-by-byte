@@ -1,6 +1,6 @@
 # Byte by Byte
 
-**Byte by Byte** is your central hub for fitness, meal tracking, mood, and menstrual health—all in one place. Instead of juggling multiple apps, Byte by Byte offers a streamlined solution that maximizes your time, reduces clutter, and keeps your privacy at the forefront.
+**Byte by Byte** is your central hub for fitness, meal tracking, mood, and menstrual health — all in one place. Instead of juggling multiple apps, Byte by Byte offers a streamlined solution that maximizes your time, reduces clutter, and keeps your privacy at the forefront.
 
 ## Why Byte by Byte?
 
@@ -38,9 +38,9 @@ expo start
 
 ## Why You'll Love It
 
-    - Less Clutter: No more hopping between apps—Byte by Byte brings all your personal health tracking into one seamless experience.
+    - Less Clutter: No more hopping between apps — Byte by Byte brings all your personal health tracking into one seamless experience.
     - Maximizes Your Time: Designed to save you time with easy-to-access features and smooth navigation.
-    - Privacy First: Your data stays local with PouchDB integration, keeping you in control.
+    - Privacy First: Your data stays local with database integration, keeping you in control.
 
 ## Development
 
@@ -55,8 +55,8 @@ Byte by Byte was developed using the following stack:
 
 With these technologies, Byte by Byte provides an efficient, privacy-focused user experience for tracking personal well-being.
 
-## download app onto your Android Phone
-At this moment in time the app will come up as unsecure if you try to install if but we promise it's not a virus!
+## Download app onto your Android Phone
+At this moment in time the app will come up as unsecure if you try to install it, but we promise it's not a virus!
 The APK: https://drive.google.com/file/d/1hD3skrPiHX4pX1W8k3J2nMkli6TLwrq9/view?usp=sharing
 Install the APK on your phone: Once the APK is ready:
 
