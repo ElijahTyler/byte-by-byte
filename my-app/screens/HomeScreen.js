@@ -1,13 +1,21 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView, Button } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { deleteData, loadFitnessToDo, loadMeal } from './database'; // Import the deleteData function
+import { deleteData, saveDayContents, loadDayContents, saveMood, loadMood, saveMenstrual, loadMenstrual, saveRoutineWeek, loadRoutineWeek, saveFitnessToDo, loadFitnessToDo, saveMeal, loadMeal, loadMoodsForMonth } from './database';
 import { SettingsContext } from './SettingsContext';  // Import SettingsContext
 
 export default function HomeScreen() {
     // Use the SettingsContext to get the global toggle states
-    const {
+    
+    const handleSaveMenstrual = (selection) => {
+        const formattedDate = formatDate(selectedDate);
+        saveMenstrual(formattedDate, selection)
+          .then(() => console.log(`Menstrual data saved for ${formattedDate}: ${selection}`))
+          .catch(error => console.error('Error saving menstrual data:', error));
+    };
+    
+const {
         isMoodEnabled,
         isMenstrualEnabled,
         isMealEnabled,
@@ -15,24 +23,21 @@ export default function HomeScreen() {
     } = useContext(SettingsContext);
 
     const [selectedDate, setSelectedDate] = useState(new Date());  // State for the currently selected date
-
     const formatDate = (date) => date.toISOString().split('T')[0];  // Helper function to format date to 'YYYY-MM-DD'
+    const formattedDate = formatDate(selectedDate);  // Format the selected date
     
-    // State for tasks and ingredients
+    // State for tasks, ingredients, mood, and notes
     const [tasks, setTasks] = useState([]);
     const [ingredients, setIngredients] = useState([]);
-
-    // State for mood selection
     const [selectedMood, setSelectedMood] = useState(null);  // Track selected mood
     const [notes, setNotes] = useState('');  // Track notes
 
     // State for menstrual section selection
-    const [menstrualSelection, setMenstrualSelection] = useState(null);  // Track Yes or No
+    const [menstrualSelection, saveMenstrual] = useState(null);  // Track Yes or No
 
-    // Fetch data based on selectedDate
+    // Fetch tasks, ingredients, mood, and notes whenever the selectedDate changes
     useEffect(() => {
         const initializeApp = async () => {
-            const formattedDate = formatDate(selectedDate);  // Format selectedDate as 'YYYY-MM-DD'
             const isFirstRun = await AsyncStorage.getItem('isFirstRun');
 
             if (!isFirstRun) {
@@ -47,12 +52,40 @@ export default function HomeScreen() {
             const loadedTasks = await loadFitnessToDo(formattedDate);
             setTasks(loadedTasks);
 
-            const loadedIngredients = await loadMeal(formattedDate);
-            setIngredients(loadedIngredients);
+            const loadedIngredients = await AsyncStorage.getItem('ingredients_list');
+            const parsedIngredients = loadedIngredients ? JSON.parse(loadedIngredients) : [];
+            setIngredients(parsedIngredients);
+
+            // Fetch the mood and notes for the selected day
+            const moodData = await loadMood(formattedDate);
+            if (moodData) {
+                setSelectedMood(moodData.mood);  // Update the mood
+                setNotes(moodData.notes);        // Update the notes
+            } else {
+                setSelectedMood(null);  // Clear mood if no data exists for the selected day
+                setNotes('');           // Clear notes if no data exists for the selected day
+            }
+
+            // Fetch the menstrual cycle selection for the selected day
+            const menstrualData = await loadMenstrual(formattedDate);
+            if (menstrualData) {
+                saveMenstrual(menstrualData.selection);  // Update the menstrual selection
+            }
         };
 
         initializeApp(); // Call the initialization function
-    }, [selectedDate]);  // Re-fetch tasks and ingredients whenever the selectedDate changes
+    }, [selectedDate]);  // Re-fetch tasks, ingredients, mood, and notes whenever the selectedDate changes
+
+    // Function to save mood and notes
+    const handleSaveMood = async () => {
+        if (selectedMood) {
+            console.log(`Saving mood and notes for date: ${formattedDate}`);
+            await saveMood(formattedDate, selectedMood, notes, true);  // Save both mood and notes
+            alert('Mood and notes saved successfully!');
+        } else {
+            alert('Please select a mood before saving.');
+        }
+    };
 
     // Function to toggle task completion
     const toggleTask = (id) => {
@@ -62,10 +95,12 @@ export default function HomeScreen() {
     };
 
     // Function to toggle the ingredients consumed today
-    const toggleIngredient = (id) => {
-        setIngredients(ingredients.map(item =>
-            item.id === id ? { ...item, consumed: !item.consumed } : item
-        ));
+    const toggleIngredient = async (id) => {
+        const updatedIngredients = ingredients.map(item =>
+            item.id === id ? { ...item, consumed: !item.consumed } : item  // Only update the item with the matching id
+        );
+        setIngredients(updatedIngredients);
+        await AsyncStorage.setItem('ingredients_list', JSON.stringify(updatedIngredients));  // Save updated ingredients
     };
 
     // Function to handle moving to the previous day (yesterday)
@@ -100,12 +135,12 @@ export default function HomeScreen() {
                         {/* Mood selection icons */}
                         
                         <View style={styles.moodOptions}>
-                            <TouchableOpacity onPress={() => setSelectedMood('VeryHappy')}>
+                            <TouchableOpacity onPress={() => setSelectedMood(5)}>
                                 <Image 
                                     source={require('../icons/5.png')} 
                                     style={[
                                         styles.icon, 
-                                        selectedMood === 'VeryHappy' && styles.selectedIcon
+                                        selectedMood === 5 && styles.selectedIcon
                                     ]}
                                 />
                             </TouchableOpacity>
@@ -156,6 +191,10 @@ export default function HomeScreen() {
                             value={notes}
                             onChangeText={(text) => setNotes(text)} 
                         />
+                        {/* Save Button */}
+                        <View style={styles.buttonContainer}>
+                            <Button title="Save Mood and Notes" onPress={handleSaveMood} />
+                        </View>
                     </View>
                 )}
 
@@ -164,20 +203,20 @@ export default function HomeScreen() {
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}> <Image source={require('../icons/Fitness.png')} style={styles.section_icon} /> Fitness</Text>
                         {tasks && tasks.length > 0 ? (
-                        tasks.map(task => (
+                            tasks.map(task => (
                                 <View key={task.id} style={styles.taskContainer}>
-                                <Checkbox
-                                    value={task.completed}
-                                    onValueChange={() => toggleTask(task.id)}
-                                    style={styles.checkbox}
-                                />
-                                <Text style={[styles.taskText, task.completed && styles.strikeThrough]}>
-                                    {task.title}
-                                </Text>
+                                    <Checkbox
+                                        value={task.completed}
+                                        onValueChange={() => toggleTask(task.id)}
+                                        style={styles.checkbox}
+                                    />
+                                    <Text style={[styles.taskText, task.completed && styles.strikeThrough]}>
+                                        {task.title}
+                                    </Text>
                                 </View>
                             ))
                         ) : (
-                        <Text>No tasks available for today.</Text>  // Optional message if no tasks exist
+                            <Text>No tasks available for today.</Text>  // Optional message if no tasks exist
                         )}
                     </View>
                 )}
@@ -211,7 +250,10 @@ export default function HomeScreen() {
                                     styles.radioButton,
                                     menstrualSelection === 'Yes' && styles.selectedRadioButton,
                                 ]}
-                                onPress={() => setMenstrualSelection('Yes')}
+                                onPress={async () => {
+                                    saveMenstrual('Yes');
+                                    await saveMenstrual(formattedDate, 'Yes');  // Auto-save when Yes is selected
+                                }}
                             >
                                 <Text>Yes</Text>
                             </TouchableOpacity>
@@ -221,7 +263,10 @@ export default function HomeScreen() {
                                     styles.radioButton,
                                     menstrualSelection === 'No' && styles.selectedRadioButton,
                                 ]}
-                                onPress={() => setMenstrualSelection('No')}
+                                onPress={async () => {
+                                    saveMenstrual('No');
+                                    await saveMenstrual(formattedDate, 'No');  // Auto-save when No is selected
+                                }}
                             >
                                 <Text>No</Text>
                             </TouchableOpacity>
@@ -266,9 +311,8 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
         marginVertical: 20,
+        alignItems: 'center',
     },
     section: {
         backgroundColor: '#fff',
@@ -285,6 +329,27 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 5,
     },
+    moodOptions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginVertical: 10,
+    },
+    icon: {
+        width: 40,
+        height: 40,
+    },
+    selectedIcon: {
+        width: 60,
+        height: 60,
+    },
+    textBox: {
+        height: 100,
+        borderColor: 'gray',
+        borderWidth: 1,
+        padding: 10,
+        borderRadius: 5,
+        textAlignVertical: 'top',
+    },
     taskContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -297,28 +362,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     strikeThrough: {
-        textDecorationLine: 'line-through',  // Strike through the text if the task is completed
-    },
-    moodOptions: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginVertical: 10,
-    },
-    icon: {
-        width: 40,  // Default size
-        height: 40, // Default size
-    },
-    selectedIcon: {
-        width: 60,  // Larger size when selected
-        height: 60, // Larger size when selected
-    },
-    textBox: {
-        height: 100,
-        borderColor: 'gray',
-        borderWidth: 1,
-        padding: 10,
-        borderRadius: 5,
-        textAlignVertical: 'top',  // For proper multiline behavior
+        textDecorationLine: 'line-through',
     },
     menstrualOptions: {
         flexDirection: 'row',

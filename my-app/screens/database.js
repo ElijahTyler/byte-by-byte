@@ -62,12 +62,17 @@ export const loadDayContents = async (date) => {
  */
 export const saveMood = async (date, mood, notes, active) => {
   const moodData = {
-    date,
+    date,  // Ensure this is 'YYYY-MM-DD' formatted
     mood,
     notes,
-    active
+    active,
   };
-  await AsyncStorage.setItem(`mood_${date}`, JSON.stringify(moodData));
+  console.log(`Saving mood for date: ${date}, mood: ${mood}`);  // Log date and mood being saved
+  try {
+    await AsyncStorage.setItem(`mood_${date}`, JSON.stringify(moodData));
+  } catch (error) {
+    console.error('Error saving mood:', error);
+  }
 };
 
 export const loadMood = async (date) => {
@@ -80,14 +85,13 @@ export const loadMood = async (date) => {
  * 
  * @param {string} date - The date to store the data for (e.g., '2024-10-12').
  * @param {boolean} isMenstruating - Whether the user is menstruating.
- * @param {string} notes - Any notes related to menstruation.
  */
-export const saveMenstrual = async (date, isMenstruating, notes) => {
+export const saveMenstrual = async (date, isMenstruating) => {
   const menstrualData = {
     date,
-    isMenstruating,
-    notes
+    isMenstruating
   };
+  console.log(`Saving menstrual data for date: ${date}, menstruating: ${isMenstruating}`);
   await AsyncStorage.setItem(`menstrual_${date}`, JSON.stringify(menstrualData));
 };
 
@@ -166,10 +170,13 @@ export const loadMeal = async (date) => {
 export const loadMoodsForMonth = async (year, month) => {
   const moods = [];
   
-  // Loop through the days of the month and load each mood
-  for (let day = 1; day <= 31; day++) {
+  // Get the number of days in the specified month
+  const daysInMonth = new Date(year, month, 0).getDate();
+
+  // Loop through the actual days of the month and load each mood
+  for (let day = 1; day <= daysInMonth; day++) {
     const date = `${year}-${month}-${String(day).padStart(2, '0')}`;
-    const moodData = await loadMood(date);
+    const moodData = await loadMood(date); // Assume loadMood is a function that retrieves mood data for a specific day
     if (moodData) {
       moods.push({ date, mood: moodData.mood });
     }
