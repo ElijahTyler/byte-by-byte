@@ -13,7 +13,10 @@ export default function CrisisScreen({ navigation }) {
       </View>
 
       {/* Crisis label */}
-      <Text style={styles.crisisLabel}>Crisis #15</Text>
+      <Text style={styles.crisisLabel}>Suicide Hotline: 988</Text>
+      <Text style={styles.crisisLabel}>Child Abuse Hotline: 800-422-4453</Text>
+      <Text style={styles.crisisLabel}>The Trevor Project: 1-866-488-7386</Text>
+      <Text style={styles.crisisLabel}>Sexual Assault Hotline: 800-656-4673</Text>
 
      
     </View>
@@ -25,7 +28,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#d8d8d8',
     padding: 20,
   },
   title: {
