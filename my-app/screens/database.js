@@ -85,14 +85,13 @@ export const loadMood = async (date) => {
  * 
  * @param {string} date - The date to store the data for (e.g., '2024-10-12').
  * @param {boolean} isMenstruating - Whether the user is menstruating.
- * @param {string} notes - Any notes related to menstruation.
  */
-export const saveMenstrual = async (date, isMenstruating, notes) => {
+export const saveMenstrual = async (date, isMenstruating) => {
   const menstrualData = {
     date,
-    isMenstruating,
-    notes
+    isMenstruating
   };
+  console.log(`Saving menstrual data for date: ${date}, menstruating: ${isMenstruating}`);
   await AsyncStorage.setItem(`menstrual_${date}`, JSON.stringify(menstrualData));
 };
 

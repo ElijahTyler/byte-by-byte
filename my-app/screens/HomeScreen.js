@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView, Button } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { deleteData, loadFitnessToDo, loadMeal, saveMood, loadMood } from './database';  // Import loadMood and saveMood functions
+import { deleteData, loadFitnessToDo, loadMeal, saveMood, loadMood, saveMenstrual, loadMenstrual } from './database';  // Import loadMood and saveMood functions
 import { SettingsContext } from './SettingsContext';  // Import SettingsContext
 
 export default function HomeScreen() {
@@ -25,7 +25,7 @@ export default function HomeScreen() {
     const [notes, setNotes] = useState('');  // Track notes
 
     // State for menstrual section selection
-    const [menstrualSelection, setMenstrualSelection] = useState(null);  // Track Yes or No
+    const [menstrualSelection, saveMenstrual] = useState(null);  // Track Yes or No
 
     // Fetch tasks, ingredients, mood, and notes whenever the selectedDate changes
     useEffect(() => {
@@ -55,6 +55,12 @@ export default function HomeScreen() {
             } else {
                 setSelectedMood(null);  // Clear mood if no data exists for the selected day
                 setNotes('');           // Clear notes if no data exists for the selected day
+            }
+
+            // Fetch the menstrual cycle selection for the selected day
+            const menstrualData = await loadMenstrual(formattedDate);
+            if (menstrualData) {
+                saveMenstrual(menstrualData.selection);  // Update the menstrual selection
             }
         };
 
@@ -115,12 +121,12 @@ export default function HomeScreen() {
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Mood</Text>
                         <View style={styles.moodOptions}>
-                            <TouchableOpacity onPress={() => setSelectedMood('VeryHappy')}>
+                            <TouchableOpacity onPress={() => setSelectedMood(5)}>
                                 <Image 
                                     source={require('../icons/5.png')} 
                                     style={[
                                         styles.icon, 
-                                        selectedMood === 'VeryHappy' && styles.selectedIcon
+                                        selectedMood === 5 && styles.selectedIcon
                                     ]}
                                 />
                             </TouchableOpacity>
@@ -171,13 +177,12 @@ export default function HomeScreen() {
                             value={notes}
                             onChangeText={(text) => setNotes(text)} 
                         />
+                        {/* Save Button */}
+                        <View style={styles.buttonContainer}>
+                            <Button title="Save Mood and Notes" onPress={handleSaveMood} />
+                        </View>
                     </View>
                 )}
-
-                {/* Save Button */}
-                <View style={styles.buttonContainer}>
-                    <Button title="Save Mood and Notes" onPress={handleSaveMood} />
-                </View>
 
                 {/* Conditionally render Fitness Section based on global toggle */}
                 {isFitnessEnabled && (
@@ -231,7 +236,10 @@ export default function HomeScreen() {
                                     styles.radioButton,
                                     menstrualSelection === 'Yes' && styles.selectedRadioButton,
                                 ]}
-                                onPress={() => setMenstrualSelection('Yes')}
+                                onPress={async () => {
+                                    saveMenstrual('Yes');
+                                    await saveMenstrual(formattedDate, 'Yes');  // Auto-save when Yes is selected
+                                }}
                             >
                                 <Text>Yes</Text>
                             </TouchableOpacity>
@@ -241,7 +249,10 @@ export default function HomeScreen() {
                                     styles.radioButton,
                                     menstrualSelection === 'No' && styles.selectedRadioButton,
                                 ]}
-                                onPress={() => setMenstrualSelection('No')}
+                                onPress={async () => {
+                                    saveMenstrual('No');
+                                    await saveMenstrual(formattedDate, 'No');  // Auto-save when No is selected
+                                }}
                             >
                                 <Text>No</Text>
                             </TouchableOpacity>
