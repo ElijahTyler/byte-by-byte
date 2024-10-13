@@ -2,22 +2,19 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { deleteData, loadFitnessToDo, loadMeal } from './database'; // Import the deleteData function
+import { deleteData, loadFitnessToDo, loadMeal, saveMood } from './database'; // Import the saveMood function
 import { SettingsContext } from './SettingsContext';  // Import SettingsContext
 
 export default function HomeScreen() {
-    // Use the SettingsContext to get the global toggle states
-    const {
-        isMoodEnabled,
-        isMenstrualEnabled,
-        isMealEnabled,
-        isFitnessEnabled
-    } = useContext(SettingsContext);
+    const { isMoodEnabled, isMenstrualEnabled, isMealEnabled, isFitnessEnabled } = useContext(SettingsContext);
 
     const [selectedDate, setSelectedDate] = useState(new Date());  // State for the currently selected date
+    const formatDate = (date) => {
+        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);  // Adjust for time zone offset
+        return localDate.toISOString().split('T')[0];  // Get YYYY-MM-DD format without time
+    };
+    const formattedDate = formatDate(selectedDate);
 
-    const formatDate = (date) => date.toISOString().split('T')[0];  // Helper function to format date to 'YYYY-MM-DD'
-    
     // State for tasks and ingredients
     const [tasks, setTasks] = useState([]);
     const [ingredients, setIngredients] = useState([]);
@@ -32,14 +29,11 @@ export default function HomeScreen() {
     // Fetch data based on selectedDate
     useEffect(() => {
         const initializeApp = async () => {
-            const formattedDate = formatDate(selectedDate);  // Format selectedDate as 'YYYY-MM-DD'
             const isFirstRun = await AsyncStorage.getItem('isFirstRun');
 
             if (!isFirstRun) {
                 // First run: call deleteData to reset the data and insert defaults
                 await deleteData(formattedDate);
-
-                // Set the flag so this doesn't happen again
                 await AsyncStorage.setItem('isFirstRun', 'true');
             }
 
@@ -52,7 +46,25 @@ export default function HomeScreen() {
         };
 
         initializeApp(); // Call the initialization function
-    }, [selectedDate]);  // Re-fetch tasks and ingredients whenever the selectedDate changes
+    }, [formattedDate]);  // Re-fetch tasks and ingredients whenever the selectedDate changes
+
+    // Function to save mood and notes to the database
+      
+    const handleSaveMood = async (mood) => {
+        console.log(`Raw selectedDate (before formatting): ${selectedDate}`);
+        const formattedDate = formatDate(selectedDate);  // Format the date to 'YYYY-MM-DD'
+        console.log(`Saving mood for formatted date: ${formattedDate}`);
+        setSelectedMood(mood);
+        await saveMood(formattedDate, mood, notes, true);  // Save the mood with formatted date
+    };
+
+    // Function to update notes and save to the database
+    const handleSaveNotes = async (text) => {
+        setNotes(text);
+        if (selectedMood) {
+            await saveMood(formattedDate, selectedMood, text, true);  // Save notes to the database with the selected mood
+        }
+    };
 
     // Function to toggle task completion
     const toggleTask = (id) => {
@@ -97,7 +109,7 @@ export default function HomeScreen() {
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Mood</Text>
                         <View style={styles.moodOptions}>
-                            <TouchableOpacity onPress={() => setSelectedMood('VeryHappy')}>
+                            <TouchableOpacity onPress={() => handleSaveMood(5)}>
                                 <Image 
                                     source={require('../icons/5.png')} 
                                     style={[
@@ -106,7 +118,7 @@ export default function HomeScreen() {
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setSelectedMood('Happy')}>
+                            <TouchableOpacity onPress={() => handleSaveMood(4)}>
                                 <Image 
                                     source={require('../icons/4.png')} 
                                     style={[
@@ -115,7 +127,7 @@ export default function HomeScreen() {
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setSelectedMood('Neutral')}>
+                            <TouchableOpacity onPress={() => handleSaveMood(3)}>
                                 <Image 
                                     source={require('../icons/3.png')} 
                                     style={[
@@ -124,7 +136,7 @@ export default function HomeScreen() {
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setSelectedMood('Sad')}>
+                            <TouchableOpacity onPress={() => handleSaveMood(2)}>
                                 <Image 
                                     source={require('../icons/2.png')} 
                                     style={[
@@ -133,7 +145,7 @@ export default function HomeScreen() {
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setSelectedMood('VerySad')}>
+                            <TouchableOpacity onPress={() => handleSaveMood(1)}>
                                 <Image 
                                     source={require('../icons/1.png')} 
                                     style={[
@@ -151,7 +163,7 @@ export default function HomeScreen() {
                             multiline
                             placeholder="Write your notes here..."
                             value={notes}
-                            onChangeText={(text) => setNotes(text)} 
+                            onChangeText={handleSaveNotes}  // Save notes when they are changed
                         />
                     </View>
                 )}
@@ -332,7 +344,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedRadioButton: {
-        backgroundColor: 'blue',  // Change
+        backgroundColor: 'blue',  // Change background color to indicate selection
     },
     radioText: {
         color: 'white',  // White text for better contrast when selected

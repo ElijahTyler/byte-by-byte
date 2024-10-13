@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Dimensions } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';  // Import useFocusEffect
 import { loadMoodsForMonth } from './database';
 
 // Get the screen width to calculate day box sizes
@@ -23,21 +24,35 @@ export default function MonthViewScreen() {
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth() + 1; // Get month in 'MM' format
 
+  const formatDate = (date) => {
+      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);  // Adjust for time zone offset
+      return localDate.toISOString().split('T')[0];  // Get YYYY-MM-DD format without time
+  };
+
   // Fetch moods for the current month and store them in the state
-  useEffect(() => {
-    const fetchMoodData = async () => {
-      const moods = await loadMoodsForMonth(currentYear.toString(), currentMonth.toString().padStart(2, '0'));
-      const moodMap = moods.reduce((acc, mood) => {
-        const day = new Date(mood.date).getDate();
-        acc[day] = mood.mood;
-        return acc;
-      }, {});
-      setMoodData(moodMap);
-    };
+  const fetchMoodData = async () => {
+    const moods = await loadMoodsForMonth(currentYear.toString(), currentMonth.toString().padStart(2, '0'));
+  
+    console.log('Loaded moods:', moods);  // Log the loaded moods
+  
+    const moodMap = moods.reduce((acc, mood) => {
+      const day = parseInt(mood.date.split('-')[2], 10);  // Extract the day directly from the date string
+      console.log(`Mapping mood for day ${day} (raw date: ${mood.date}) to mood: ${mood.mood}`);
+      acc[day] = mood.mood;
+      return acc;
+    }, {});
+  
+    setMoodData(moodMap);
+  };  
 
-    fetchMoodData();
-  }, [currentYear, currentMonth]);
+  useFocusEffect(
+    React.useCallback(() => {
+      // Fetch mood data whenever the screen is focused
+      fetchMoodData();
+    }, [])
+  );
 
+  // Calculate the number of days in the month and handle empty days at the start of the month
   useEffect(() => {
     const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
     const daysInCurrentMonth = new Date(currentYear, currentMonth, 0).getDate();
@@ -49,24 +64,27 @@ export default function MonthViewScreen() {
     setMonthTitle(currentDate.toLocaleString('default', { month: 'long', year: 'numeric' }));
   }, [currentYear, currentMonth]);
 
+  // Get the background color for a day based on the mood data
   const getMoodColor = (day) => {
     const mood = moodData[day];
-    return mood ? moodColors[mood] : '#e0e0e0';
+    return mood ? moodColors[mood] : '#e0e0e0'; // Default color if no mood
   };
 
-  const boxSize = screenWidth / 7 - 10; // Divide screen width by 7, adjust for padding
+  const boxSize = screenWidth / 7 - 10;  // Divide screen width by 7, adjust for padding
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Byte by Byte</Text>
       <Text style={styles.monthTitle}>{monthTitle}</Text>
 
+      {/* Weekday Labels */}
       <View style={styles.weekRow}>
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((dayLabel) => (
           <Text key={dayLabel} style={styles.dayLabel}>{dayLabel}</Text>
         ))}
       </View>
 
+      {/* Calendar Grid */}
       <FlatList
         data={daysInMonth}
         numColumns={7}
