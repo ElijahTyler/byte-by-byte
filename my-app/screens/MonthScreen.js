@@ -58,7 +58,7 @@ export default function MonthViewScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Byte by Byte</Text>
+      <Text style={styles.title}>Month Display</Text>
       <Text style={styles.monthTitle}>{monthTitle}</Text>
 
       <View style={styles.weekRow}>
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f0f2ee',
     alignItems: 'center',
   },
   title: {

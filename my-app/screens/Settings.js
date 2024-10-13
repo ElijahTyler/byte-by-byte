@@ -1,6 +1,8 @@
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch } from 'react-native';
 import { SettingsContext } from './SettingsContext';  // Import SettingsContext
+import { deleteData } from './database'; // Import deleteData function
+import { Image } from 'react-native';
 
 export default function SettingsScreen({ navigation }) {
     // Access the global state from SettingsContext
@@ -17,43 +19,51 @@ export default function SettingsScreen({ navigation }) {
         <View style={styles.container}>
             {/* Title */}
             <Text style={styles.title}>Settings</Text>
-
-            {/* Toggle for Fitness */}
-            <View style={styles.option}>
-                <Text>Fitness</Text>
-                <Switch
-                    value={isFitnessEnabled}
-                    onValueChange={setFitnessEnabled}
-                />
-            </View>
-
             {/* Toggle for Mood */}
             <View style={styles.option}>
-                <Text>Mood</Text>
+                <Text><Image source={require('../icons/mood.png')} style={styles.section_icon} /> Mood</Text>
                 <Switch
+                    trackColor={{true: "#2E4052" }}
+                    thumbColor={"#2E4052"}
                     value={isMoodEnabled}
                     onValueChange={setMoodEnabled}
                 />
             </View>
 
-            {/* Toggle for Menstrual */}
+            {/* Toggle for Fitness */}
             <View style={styles.option}>
-                <Text>Menstrual</Text>
+                <Text><Image source={require('../icons/Fitness.png')} style={styles.section_icon} /> Fitness</Text>
                 <Switch
-                    value={isMenstrualEnabled}
-                    onValueChange={setMenstrualEnabled}
+                    trackColor={{true: "#2E4052" }}
+                    thumbColor={"#2E4052"}
+                    value={isFitnessEnabled}
+                    onValueChange={setFitnessEnabled}
                 />
             </View>
 
             {/* Toggle for Meal */}
             <View style={styles.option}>
-                <Text>Meal</Text>
+                <Text><Image source={require('../icons/meal.png')} style={styles.section_icon} /> Meal</Text>
                 <Switch
+                    trackColor={{true: "#2E4052" }}
+                    thumbColor={"#2E4052"}
                     value={isMealEnabled}
                     onValueChange={setMealEnabled}
                 />
             </View>
-                    {/* "See My Day" Button */}
+
+            {/* Toggle for Menstrual */}
+            <View style={styles.option}>
+                <Text><Image source={require('../icons/PMS.png')} style={styles.section_icon} /> Menstrual</Text>
+                <Switch
+                    trackColor={{true: "#2E4052" }}
+                    thumbColor={"#2E4052"}
+                    value={isMenstrualEnabled}
+                    onValueChange={setMenstrualEnabled}
+                />
+            </View>
+
+            {/* "See My Day" Button */}
             <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('FitnessSet')}>
             <Text style={styles.buttonText}>Set Fitness Routine</Text>
             </TouchableOpacity>
@@ -75,13 +85,20 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#f0f2ee',
+    },
+    section_icon: {
+        width: 19,
+        height: 19,
+        marginHorizontal: 10,  // Adjust spacing between icons
+        padding: 10,
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
     },
+
     option: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -95,9 +112,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 5,
+        
     },
     button: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#2E4052',
         padding: 15,
         borderRadius: 10,
         marginTop: 20,
@@ -107,4 +125,5 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
     },
+
 });
