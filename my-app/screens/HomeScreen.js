@@ -123,7 +123,7 @@ const {
                 {/* App header */}
                 <View style={styles.header}>
                     <Text style={styles.title}>
-                        Hello👋 {"\n"} Today is {selectedDate.toDateString()} {/* Display the selected date */}
+                    {selectedDate.toDateString() === new Date().toDateString() ? "Hello👋 \n Today is" : "Now viewing"} {selectedDate.toDateString()} {/* Display the selected date */}
                     </Text>
                 </View>
 
@@ -276,10 +276,15 @@ const {
 
                 {/* Add Yesterday and Tomorrow buttons */}
                 <View style={styles.buttonContainer}>
-                    <TouchableOpacity onPress={goToYesterday}>
+                    <TouchableOpacity style={styles.radioButton} onPress={goToYesterday}>
                         <Text>Yesterday</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={goToTomorrow}>
+                    {selectedDate.toDateString() !== new Date().toDateString() && (
+                        <TouchableOpacity style={styles.radioButton} onPress={() => setSelectedDate(new Date())}>
+                            <Text>Today</Text>
+                        </TouchableOpacity>
+                    )}
+                    <TouchableOpacity style={styles.radioButton} onPress={goToTomorrow}>
                         <Text>Tomorrow</Text>
                     </TouchableOpacity>
                 </View>
