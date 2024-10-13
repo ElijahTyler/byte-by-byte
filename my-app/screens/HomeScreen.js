@@ -1,32 +1,33 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView, Button } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { deleteData, loadFitnessToDo, loadMeal, saveMood } from './database'; // Import the saveMood function
+import { deleteData, loadFitnessToDo, loadMeal, saveMood, loadMood } from './database';  // Import loadMood and saveMood functions
 import { SettingsContext } from './SettingsContext';  // Import SettingsContext
 
 export default function HomeScreen() {
-    const { isMoodEnabled, isMenstrualEnabled, isMealEnabled, isFitnessEnabled } = useContext(SettingsContext);
+    // Use the SettingsContext to get the global toggle states
+    const {
+        isMoodEnabled,
+        isMenstrualEnabled,
+        isMealEnabled,
+        isFitnessEnabled
+    } = useContext(SettingsContext);
 
     const [selectedDate, setSelectedDate] = useState(new Date());  // State for the currently selected date
-    const formatDate = (date) => {
-        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);  // Adjust for time zone offset
-        return localDate.toISOString().split('T')[0];  // Get YYYY-MM-DD format without time
-    };
-    const formattedDate = formatDate(selectedDate);
-
-    // State for tasks and ingredients
+    const formatDate = (date) => date.toISOString().split('T')[0];  // Helper function to format date to 'YYYY-MM-DD'
+    const formattedDate = formatDate(selectedDate);  // Format the selected date
+    
+    // State for tasks, ingredients, mood, and notes
     const [tasks, setTasks] = useState([]);
     const [ingredients, setIngredients] = useState([]);
-
-    // State for mood selection
     const [selectedMood, setSelectedMood] = useState(null);  // Track selected mood
     const [notes, setNotes] = useState('');  // Track notes
 
     // State for menstrual section selection
     const [menstrualSelection, setMenstrualSelection] = useState(null);  // Track Yes or No
 
-    // Fetch data based on selectedDate
+    // Fetch tasks, ingredients, mood, and notes whenever the selectedDate changes
     useEffect(() => {
         const initializeApp = async () => {
             const isFirstRun = await AsyncStorage.getItem('isFirstRun');
@@ -34,6 +35,8 @@ export default function HomeScreen() {
             if (!isFirstRun) {
                 // First run: call deleteData to reset the data and insert defaults
                 await deleteData(formattedDate);
+
+                // Set the flag so this doesn't happen again
                 await AsyncStorage.setItem('isFirstRun', 'true');
             }
 
@@ -43,26 +46,29 @@ export default function HomeScreen() {
 
             const loadedIngredients = await loadMeal(formattedDate);
             setIngredients(loadedIngredients);
+
+            // Fetch the mood and notes for the selected day
+            const moodData = await loadMood(formattedDate);
+            if (moodData) {
+                setSelectedMood(moodData.mood);  // Update the mood
+                setNotes(moodData.notes);        // Update the notes
+            } else {
+                setSelectedMood(null);  // Clear mood if no data exists for the selected day
+                setNotes('');           // Clear notes if no data exists for the selected day
+            }
         };
 
         initializeApp(); // Call the initialization function
-    }, [formattedDate]);  // Re-fetch tasks and ingredients whenever the selectedDate changes
+    }, [selectedDate]);  // Re-fetch tasks, ingredients, mood, and notes whenever the selectedDate changes
 
-    // Function to save mood and notes to the database
-      
-    const handleSaveMood = async (mood) => {
-        console.log(`Raw selectedDate (before formatting): ${selectedDate}`);
-        const formattedDate = formatDate(selectedDate);  // Format the date to 'YYYY-MM-DD'
-        console.log(`Saving mood for formatted date: ${formattedDate}`);
-        setSelectedMood(mood);
-        await saveMood(formattedDate, mood, notes, true);  // Save the mood with formatted date
-    };
-
-    // Function to update notes and save to the database
-    const handleSaveNotes = async (text) => {
-        setNotes(text);
+    // Function to save mood and notes
+    const handleSaveMood = async () => {
         if (selectedMood) {
-            await saveMood(formattedDate, selectedMood, text, true);  // Save notes to the database with the selected mood
+            console.log(`Saving mood and notes for date: ${formattedDate}`);
+            await saveMood(formattedDate, selectedMood, notes, true);  // Save both mood and notes
+            alert('Mood and notes saved successfully!');
+        } else {
+            alert('Please select a mood before saving.');
         }
     };
 
@@ -109,7 +115,7 @@ export default function HomeScreen() {
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Mood</Text>
                         <View style={styles.moodOptions}>
-                            <TouchableOpacity onPress={() => handleSaveMood(5)}>
+                            <TouchableOpacity onPress={() => setSelectedMood('VeryHappy')}>
                                 <Image 
                                     source={require('../icons/5.png')} 
                                     style={[
@@ -118,7 +124,7 @@ export default function HomeScreen() {
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleSaveMood(4)}>
+                            <TouchableOpacity onPress={() => setSelectedMood('Happy')}>
                                 <Image 
                                     source={require('../icons/4.png')} 
                                     style={[
@@ -127,7 +133,7 @@ export default function HomeScreen() {
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleSaveMood(3)}>
+                            <TouchableOpacity onPress={() => setSelectedMood('Neutral')}>
                                 <Image 
                                     source={require('../icons/3.png')} 
                                     style={[
@@ -136,7 +142,7 @@ export default function HomeScreen() {
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleSaveMood(2)}>
+                            <TouchableOpacity onPress={() => setSelectedMood('Sad')}>
                                 <Image 
                                     source={require('../icons/2.png')} 
                                     style={[
@@ -145,7 +151,7 @@ export default function HomeScreen() {
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleSaveMood(1)}>
+                            <TouchableOpacity onPress={() => setSelectedMood('VerySad')}>
                                 <Image 
                                     source={require('../icons/1.png')} 
                                     style={[
@@ -163,30 +169,35 @@ export default function HomeScreen() {
                             multiline
                             placeholder="Write your notes here..."
                             value={notes}
-                            onChangeText={handleSaveNotes}  // Save notes when they are changed
+                            onChangeText={(text) => setNotes(text)} 
                         />
                     </View>
                 )}
+
+                {/* Save Button */}
+                <View style={styles.buttonContainer}>
+                    <Button title="Save Mood and Notes" onPress={handleSaveMood} />
+                </View>
 
                 {/* Conditionally render Fitness Section based on global toggle */}
                 {isFitnessEnabled && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Fitness</Text>
                         {tasks && tasks.length > 0 ? (
-                        tasks.map(task => (
+                            tasks.map(task => (
                                 <View key={task.id} style={styles.taskContainer}>
-                                <Checkbox
-                                    value={task.completed}
-                                    onValueChange={() => toggleTask(task.id)}
-                                    style={styles.checkbox}
-                                />
-                                <Text style={[styles.taskText, task.completed && styles.strikeThrough]}>
-                                    {task.title}
-                                </Text>
+                                    <Checkbox
+                                        value={task.completed}
+                                        onValueChange={() => toggleTask(task.id)}
+                                        style={styles.checkbox}
+                                    />
+                                    <Text style={[styles.taskText, task.completed && styles.strikeThrough]}>
+                                        {task.title}
+                                    </Text>
                                 </View>
                             ))
                         ) : (
-                        <Text>No tasks available for today.</Text>  // Optional message if no tasks exist
+                            <Text>No tasks available for today.</Text>  // Optional message if no tasks exist
                         )}
                     </View>
                 )}
@@ -275,9 +286,8 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
         marginVertical: 20,
+        alignItems: 'center',
     },
     section: {
         backgroundColor: '#fff',
@@ -294,6 +304,27 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 5,
     },
+    moodOptions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginVertical: 10,
+    },
+    icon: {
+        width: 40,
+        height: 40,
+    },
+    selectedIcon: {
+        width: 60,
+        height: 60,
+    },
+    textBox: {
+        height: 100,
+        borderColor: 'gray',
+        borderWidth: 1,
+        padding: 10,
+        borderRadius: 5,
+        textAlignVertical: 'top',
+    },
     taskContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -306,28 +337,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     strikeThrough: {
-        textDecorationLine: 'line-through',  // Strike through the text if the task is completed
-    },
-    moodOptions: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginVertical: 10,
-    },
-    icon: {
-        width: 40,  // Default size
-        height: 40, // Default size
-    },
-    selectedIcon: {
-        width: 60,  // Larger size when selected
-        height: 60, // Larger size when selected
-    },
-    textBox: {
-        height: 100,
-        borderColor: 'gray',
-        borderWidth: 1,
-        padding: 10,
-        borderRadius: 5,
-        textAlignVertical: 'top',  // For proper multiline behavior
+        textDecorationLine: 'line-through',
     },
     menstrualOptions: {
         flexDirection: 'row',
@@ -344,10 +354,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedRadioButton: {
-        backgroundColor: 'blue',  // Change background color to indicate selection
-    },
-    radioText: {
-        color: 'white',  // White text for better contrast when selected
-        fontWeight: 'bold',
+        backgroundColor: 'blue',
     },
 });
