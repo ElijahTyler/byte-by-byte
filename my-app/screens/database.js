@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const initializeDatabase = async () => {
+export const deleteData = async () => {
   // Clear all data from AsyncStorage
   await AsyncStorage.clear();
 }

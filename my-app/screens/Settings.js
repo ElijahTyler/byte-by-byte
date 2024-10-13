@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { deleteData } from './database';
 
 export default function SettingsScreen({ navigation }) {
     const [isMoodEnabled, setMoodEnabled] = React.useState(false);
@@ -57,7 +58,7 @@ export default function SettingsScreen({ navigation }) {
         </TouchableOpacity>
 
         {/*"delete my data" button */}
-        <TouchableOpacity style={styles.button} onPress={() => alert('Delete data functionality coming soon!')}>
+        <TouchableOpacity style={styles.button} onPress={() => deleteData()}>
             <Text style={styles.buttonText}>Delete my data</Text> 
         </TouchableOpacity>
         </View>
