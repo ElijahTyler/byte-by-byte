@@ -119,7 +119,10 @@ export default function HomeScreen() {
                 {/* Conditionally render Mood Section based on global toggle */}
                 {isMoodEnabled && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Mood</Text>
+                        
+                        <Text style={styles.sectionTitle}> <Image source={require('../icons/mood.png')} style={styles.section_icon} /> Mood</Text>
+                        {/* Mood selection icons */}
+                        
                         <View style={styles.moodOptions}>
                             <TouchableOpacity onPress={() => setSelectedMood(5)}>
                                 <Image 
@@ -187,7 +190,7 @@ export default function HomeScreen() {
                 {/* Conditionally render Fitness Section based on global toggle */}
                 {isFitnessEnabled && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Fitness</Text>
+                        <Text style={styles.sectionTitle}> <Image source={require('../icons/Fitness.png')} style={styles.section_icon} /> Fitness</Text>
                         {tasks && tasks.length > 0 ? (
                             tasks.map(task => (
                                 <View key={task.id} style={styles.taskContainer}>
@@ -210,7 +213,7 @@ export default function HomeScreen() {
                 {/* Conditionally render Meal Section based on global toggle */}
                 {isMealEnabled && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Ingredients Consumed Today</Text>
+                        <Text style={styles.sectionTitle}><Image source={require('../icons/meal.png')} style={styles.section_icon} /> Ingredients Consumed Today</Text>
                         {ingredients.map(item => (
                             <View key={item.id} style={styles.taskContainer}>
                                 <Checkbox
@@ -229,7 +232,7 @@ export default function HomeScreen() {
                 {/* Conditionally render Menstrual Section based on global toggle */}
                 {isMenstrualEnabled && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Menstrual</Text>
+                        <Text style={styles.sectionTitle}><Image source={require('../icons/PMS.png')} style={styles.section_icon} /> PMS</Text>
                         <View style={styles.menstrualOptions}>
                             <TouchableOpacity
                                 style={[
@@ -365,6 +368,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedRadioButton: {
-        backgroundColor: 'blue',
+        backgroundColor: '#b8d8ba',  // Change
     },
+    radioText: {
+        color: 'white',  // White text for better contrast when selected
+        fontWeight: 'bold',
+    },
+    section_icon: {
+        width: 24,
+        height: 24,
+        //marginHorizontal: 10,  // Adjust spacing between icons
+      },
 });

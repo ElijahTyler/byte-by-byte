@@ -27,9 +27,6 @@ function CustomHeader({ navigation }) {
         <Text style={styles.title}>Byte by Byte</Text>
       </TouchableOpacity>
       {/* Tabs (Day, Week, Month) */}
-      <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('Home')}>
-        <Text>Day</Text>
-      </TouchableOpacity>
       <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('MonthScreen')}>
         <Text>Month</Text>
       </TouchableOpacity>

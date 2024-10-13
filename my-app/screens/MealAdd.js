@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f0f2ee',
   },
   header: {
     fontSize: 24,
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   addButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#2E4052',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
