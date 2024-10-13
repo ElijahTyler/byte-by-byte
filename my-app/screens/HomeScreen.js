@@ -316,8 +316,9 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         marginVertical: 20,
-        alignItems: 'center',
     },
     section: {
         backgroundColor: '#fff',
