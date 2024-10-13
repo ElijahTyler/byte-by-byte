@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingTop: 40,
     paddingBottom: 10,  
-    backgroundColor: '#BDD9BF',
+    backgroundColor: '#6e9f51',
   },
   title: {
     fontSize: 20,

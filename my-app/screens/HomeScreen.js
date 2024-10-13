@@ -43,23 +43,7 @@ export default function HomeScreen({ navigation }) {
             <View style={styles.homeContainer}>
                 {/* App header */}
                 <View style={styles.header}>
-                </View>
-
-                {/* Fitness Section */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Fitness</Text>
-                    {tasks.map(task => (
-                        <View key={task.id} style={styles.taskContainer}>
-                            <Checkbox
-                                value={task.completed}
-                                onValueChange={() => toggleTask(task.id)}
-                                style={styles.checkbox}
-                            />
-                            <Text style={[styles.taskText, task.completed && styles.strikeThrough]}>
-                                {task.title}
-                            </Text>
-                        </View>
-                    ))}
+                    <Text style={styles.title}>Hello👋 {"\n"}Today is Saturday, October 12th</Text>
                 </View>
 
                 {/* Mood Section */}
@@ -124,6 +108,40 @@ export default function HomeScreen({ navigation }) {
                     />
                 </View>
 
+                {/* Fitness Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Fitness</Text>
+                    {tasks.map(task => (
+                        <View key={task.id} style={styles.taskContainer}>
+                            <Checkbox
+                                value={task.completed}
+                                onValueChange={() => toggleTask(task.id)}
+                                style={styles.checkbox}
+                            />
+                            <Text style={[styles.taskText, task.completed && styles.strikeThrough]}>
+                                {task.title}
+                            </Text>
+                        </View>
+                    ))}
+                </View>
+
+                {/* Meal Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Ingredients Consumed Today</Text>
+                    {ing.map(item => (
+                        <View key={item.id} style={styles.taskContainer}>
+                            <Checkbox
+                                value={item.completed}
+                                onValueChange={() => toggleIng(item.id)}
+                                style={styles.checkbox}
+                            />
+                            <Text style={[styles.taskText, item.completed && styles.strikeThrough]}>
+                                {item.title}
+                            </Text>
+                        </View>
+                    ))}
+                </View>
+
                 {/* Menstrual Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Menstrual</Text>
@@ -150,22 +168,6 @@ export default function HomeScreen({ navigation }) {
                     </View>
                 </View>
 
-                {/* Meal Section */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Ingredients Consumed Today</Text>
-                    {ing.map(item => (
-                        <View key={item.id} style={styles.taskContainer}>
-                            <Checkbox
-                                value={item.completed}
-                                onValueChange={() => toggleIng(item.id)}
-                                style={styles.checkbox}
-                            />
-                            <Text style={[styles.taskText, item.completed && styles.strikeThrough]}>
-                                {item.title}
-                            </Text>
-                        </View>
-                    ))}
-                </View>
                 {/*add back and next buttons */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => alert('Coming soon')}>
@@ -181,6 +183,12 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
     scrollView: {
         flex: 1,
         backgroundColor: '#f5f5f5',
@@ -188,7 +196,7 @@ const styles = StyleSheet.create({
     homeContainer: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#f0f2ee',
         width: '100%',
     },
     header: {
@@ -206,6 +214,9 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 5,
+    },
+    sectionMoodColor:{
+        backgroundColor : "#e5c183"
     },
     sectionTitle: {
         fontSize: 18,
