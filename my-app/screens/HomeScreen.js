@@ -15,6 +15,14 @@ export default function HomeScreen() {
         isFitnessEnabled
     } = useContext(SettingsContext);
 
+    const setDate = async (date) => {
+        try {
+            await AsyncStorage.setItem('selectedDate', date);
+        } catch (error) {
+            console.error('Error saving date to AsyncStorage:', error);
+        }
+    };
+
     const handleSaveMenstrual = async (selection) => {
         const formattedDate = formatDate(selectedDate);
         console.log(`Saving menstrual data for date: ${formattedDate}`);
@@ -25,8 +33,48 @@ export default function HomeScreen() {
             console.error('Error saving menstrual data:', error);
         }
     };
-    
 
+    // Helper function to get today's date in YYYY-MM-DD format
+    const getTodayDate = () => {
+        const today = new Date();
+        return today.toISOString().split('T')[0];
+    };
+
+    // Load data for the given date (add your specific data fetching logic here)
+    const loadDataForDate = async (selectedDate) => {
+        try {
+        // Add your existing logic to load mood, menstrual, fitness, meals based on the date
+        } catch (error) {
+        console.error('Error loading data for date', error);
+        }
+    };
+    
+    // Check AsyncStorage for a date or fallback to today's date
+    useEffect(() => {
+        const checkDateInStorage = async () => {
+          try {
+            const storedDate = await AsyncStorage.getItem('selectedDate');
+            console.log('Stored date:', storedDate);
+    
+            if (storedDate) {
+              setSelectedDate(new Date(storedDate)); // Set the selected date based on AsyncStorage
+              await AsyncStorage.removeItem('selectedDate'); // Clear it after using it
+              loadDataForDate(storedDate); // Load the data for the stored date
+            } else {
+              const today = getTodayDate();
+              setSelectedDate(new Date(today)); // Set today's date if no stored date
+              loadDataForDate(today); // Load the data for today's date
+            }
+          } catch (error) {
+            console.error('Error reading date from AsyncStorage', error);
+            const today = getTodayDate();
+            setSelectedDate(new Date(today)); // Fallback to today's date if an error occurs
+            loadDataForDate(today);
+          }
+        };
+    
+        checkDateInStorage(); // Run this on component load
+    }, []);    
 
     const [selectedDate, setSelectedDate] = useState(new Date());  // State for the currently selected date
     const formatDate = (date) => date.toISOString().split('T')[0];  // Helper function to format date to 'YYYY-MM-DD'

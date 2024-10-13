@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native'; // Import navigation hook
 import { loadMoodsForMonth } from './database'; // Import the function from database.js
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -66,18 +67,24 @@ const MonthScreen = () => {
     loadMoods();
   }, [currentMonth]);
 
-  // Function to handle day click and navigate to HomeScreen
-  const handleDayClick = (day) => {
-    if (day) {
-      // Build the date in 'YYYY-MM-DD' format
+  // Function to handle day click and build the full date string
+  const handleDayClick = async (date_day_of_month) => {
+    try {
       const year = currentMonth.getUTCFullYear();
-      const month = String(currentMonth.getUTCMonth() + 1).padStart(2, '0');
-      const date = `${year}-${month}-${String(day).padStart(2, '0')}`;
+      const month = String(currentMonth.getUTCMonth() + 1).padStart(2, '0'); // Ensure 2 digits for the month
+      const day = String(date_day_of_month).padStart(2, '0'); // Ensure 2 digits for the day
+  
+      const fullDate = `${year}-${month}-${day}`; // Build the full date string in YYYY-MM-DD format
+  
+      await AsyncStorage.setItem('selectedDate', fullDate); // Save the full date string
+      console.log('Date saved successfully:', fullDate);
 
-      // Navigate to HomeScreen and pass the selected date
-      navigation.navigate('HomeScreen', { selectedDate: date });
+      // Navigate to the HomeScreen
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error('Error saving date:', error);
     }
-  };
+  };  
 
   // Function to increment the current month
   const incrementMonth = () => {
