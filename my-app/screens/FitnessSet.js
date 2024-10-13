@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f0f2ee',
   },
   header: {
     fontSize: 24,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   selectedDayButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#b8d8ba',
   },
   dayButtonText: {
     fontSize: 16,
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   saveButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#2E4052',
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
