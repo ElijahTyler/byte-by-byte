@@ -23,6 +23,8 @@ export default function SettingsScreen({ navigation }) {
             <View style={styles.option}>
                 <Text><Image source={require('../icons/mood.png')} style={styles.section_icon} /> Mood</Text>
                 <Switch
+                    trackColor={{true: "#2E4052" }}
+                    thumbColor={"#2E4052"}
                     value={isMoodEnabled}
                     onValueChange={setMoodEnabled}
                 />
@@ -32,6 +34,8 @@ export default function SettingsScreen({ navigation }) {
             <View style={styles.option}>
                 <Text><Image source={require('../icons/Fitness.png')} style={styles.section_icon} /> Fitness</Text>
                 <Switch
+                    trackColor={{true: "#2E4052" }}
+                    thumbColor={"#2E4052"}
                     value={isFitnessEnabled}
                     onValueChange={setFitnessEnabled}
                 />
@@ -41,6 +45,8 @@ export default function SettingsScreen({ navigation }) {
             <View style={styles.option}>
                 <Text><Image source={require('../icons/meal.png')} style={styles.section_icon} /> Meal</Text>
                 <Switch
+                    trackColor={{true: "#2E4052" }}
+                    thumbColor={"#2E4052"}
                     value={isMealEnabled}
                     onValueChange={setMealEnabled}
                 />
@@ -50,6 +56,8 @@ export default function SettingsScreen({ navigation }) {
             <View style={styles.option}>
                 <Text><Image source={require('../icons/PMS.png')} style={styles.section_icon} /> Menstrual</Text>
                 <Switch
+                    trackColor={{true: "#2E4052" }}
+                    thumbColor={"#2E4052"}
                     value={isMenstrualEnabled}
                     onValueChange={setMenstrualEnabled}
                 />
@@ -80,8 +88,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#f0f2ee',
     },
     section_icon: {
-        width: 10,
-        height: 10,
+        width: 19,
+        height: 19,
         marginHorizontal: 10,  // Adjust spacing between icons
         padding: 10,
     },
@@ -90,6 +98,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 20,
     },
+
     option: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -103,6 +112,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 5,
+        
     },
     button: {
         backgroundColor: '#2E4052',
