@@ -8,6 +8,8 @@ import CrisisScreen from './screens/CrisisScreen';  // Import CrisisScreen
 import MonthScreen from './screens/MonthScreen';  // Import MonthScreen
 import FitnessSet from './screens/FitnessSet';
 import MealAdd from './screens/MealAdd';
+import { SettingsProvider } from './screens/SettingsContext';
+
 
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 
@@ -43,6 +45,7 @@ function CustomHeader({ navigation }) {
 
 export default function App() {
   return (
+    <SettingsProvider>
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Home"
@@ -60,6 +63,7 @@ export default function App() {
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>
+    </SettingsProvider>
   );
 }
 
