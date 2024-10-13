@@ -8,7 +8,7 @@ import CrisisScreen from './screens/CrisisScreen';  // Import CrisisScreen
 import MonthScreen from './screens/MonthScreen';  // Import MonthScreen
 import FitnessSet from './screens/FitnessSet';
 import MealAdd from './screens/MealAdd';
-// import { initializeDatabase } from './database';  // Import initializeDatabase
+import { initializeDatabase } from './screens/database';  // Import initializeDatabase
 
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 initializeDatabase();  // Initialize the database

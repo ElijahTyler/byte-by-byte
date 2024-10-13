@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Dimensions } from 'react-native';
-import getMoodData from '../database';  // Import getMoodData
+import { loadMoodsForMonth } from './database';
 
 // Get the screen width to calculate day box sizes
 const screenWidth = Dimensions.get('window').width;
@@ -17,17 +17,30 @@ export default function MonthViewScreen() {
   const [selectedDays, setSelectedDays] = useState({});
   const [daysInMonth, setDaysInMonth] = useState([]);
   const [monthTitle, setMonthTitle] = useState('');
+  const [moodData, setMoodData] = useState({}); // State to store mood data
 
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth();
+  const currentMonth = currentDate.getMonth() + 1; // Get month in 'MM' format
 
-  // get all mood data from current month of current year
-  const moodData = getMoodData(currentYear, currentMonth);
+  // Fetch moods for the current month and store them in the state
+  useEffect(() => {
+    const fetchMoodData = async () => {
+      const moods = await loadMoodsForMonth(currentYear.toString(), currentMonth.toString().padStart(2, '0'));
+      const moodMap = moods.reduce((acc, mood) => {
+        const day = new Date(mood.date).getDate();
+        acc[day] = mood.mood;
+        return acc;
+      }, {});
+      setMoodData(moodMap);
+    };
+
+    fetchMoodData();
+  }, [currentYear, currentMonth]);
 
   useEffect(() => {
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
-    const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
+    const daysInCurrentMonth = new Date(currentYear, currentMonth, 0).getDate();
 
     const daysArray = Array.from({ length: firstDayOfMonth }, () => null)
       .concat(Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1));
@@ -108,7 +121,6 @@ const styles = StyleSheet.create({
   },
   calendarContainer: {
     justifyContent: 'center',
-    // alignItems: 'center',
   },
   dayBox: {
     margin: 2,
