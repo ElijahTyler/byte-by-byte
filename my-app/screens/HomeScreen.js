@@ -44,8 +44,9 @@ export default function HomeScreen() {
             const loadedTasks = await loadFitnessToDo(formattedDate);
             setTasks(loadedTasks);
 
-            const loadedIngredients = await loadMeal(formattedDate);
-            setIngredients(loadedIngredients);
+            const loadedIngredients = await AsyncStorage.getItem('ingredients_list');
+            const parsedIngredients = loadedIngredients ? JSON.parse(loadedIngredients) : [];
+            setIngredients(parsedIngredients);
 
             // Fetch the mood and notes for the selected day
             const moodData = await loadMood(formattedDate);
@@ -86,10 +87,12 @@ export default function HomeScreen() {
     };
 
     // Function to toggle the ingredients consumed today
-    const toggleIngredient = (id) => {
-        setIngredients(ingredients.map(item =>
-            item.id === id ? { ...item, consumed: !item.consumed } : item
-        ));
+    const toggleIngredient = async (id) => {
+        const updatedIngredients = ingredients.map(item =>
+            item.id === id ? { ...item, consumed: !item.consumed } : item  // Only update the item with the matching id
+        );
+        setIngredients(updatedIngredients);
+        await AsyncStorage.setItem('ingredients_list', JSON.stringify(updatedIngredients));  // Save updated ingredients
     };
 
     // Function to handle moving to the previous day (yesterday)

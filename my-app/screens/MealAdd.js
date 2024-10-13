@@ -24,10 +24,15 @@ const MealAdd = ({ date }) => {
   // Handle adding a new ingredient
   const addIngredient = async () => {
     if (ingredient.trim()) {
-      const newIngredients = [...ingredients, { ingredient, consumed: false }];
+      const newIngredient = {
+        id: Date.now(), // Generate unique ID based on timestamp
+        ingredient,
+        consumed: false
+      };
+      const newIngredients = [...ingredients, newIngredient];
       setIngredients(newIngredients);
       try {
-        await saveMeal(date, newIngredients); // Update the JSON database with the new ingredient list
+        await saveMeal(date, newIngredients); // Save the updated ingredient list
         console.log(`Saved ingredients for ${date}:`, newIngredients); // Log saved ingredients
         setIngredient(''); // Clear the input field
       } catch (error) {
