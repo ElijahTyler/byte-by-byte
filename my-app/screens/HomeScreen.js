@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView } from 'react-native';
-import Checkbox from 'expo-checkbox'; 
+import Checkbox from 'expo-checkbox';
+import { SettingsContext } from './SettingsContext';  // Import SettingsContext
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen() {
+    // Use the SettingsContext to get the global toggle states
+    const {
+        isMoodEnabled,
+        isMenstrualEnabled,
+        isMealEnabled,
+        isFitnessEnabled
+    } = useContext(SettingsContext);
+
     // State for tasks
     const [tasks, setTasks] = useState([
         { id: 1, title: 'Take a walk', completed: false },
@@ -46,129 +55,137 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.title}>Hello👋 {"\n"}Today is Saturday, October 12th</Text>
                 </View>
 
-                {/* Mood Section */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Mood</Text>
-                    <View style={styles.moodOptions}>
-                        <TouchableOpacity onPress={() => setSelectedMood('VeryHappy')}>
-                            <Image 
-                                source={require('../icons/5.png')} 
-                                style={[
-                                    styles.icon, 
-                                    selectedMood === 'VeryHappy' && styles.selectedIcon
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setSelectedMood('Happy')}>
-                            <Image 
-                                source={require('../icons/4.png')} 
-                                style={[
-                                    styles.icon, 
-                                    selectedMood === 'Happy' && styles.selectedIcon
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setSelectedMood('Neutral')}>
-                            <Image 
-                                source={require('../icons/3.png')} 
-                                style={[
-                                    styles.icon, 
-                                    selectedMood === 'Neutral' && styles.selectedIcon
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setSelectedMood('Sad')}>
-                            <Image 
-                                source={require('../icons/2.png')} 
-                                style={[
-                                    styles.icon, 
-                                    selectedMood === 'Sad' && styles.selectedIcon
-                                ]}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setSelectedMood('VerySad')}>
-                            <Image 
-                                source={require('../icons/1.png')} 
-                                style={[
-                                    styles.icon, 
-                                    selectedMood === 'VerySad' && styles.selectedIcon
-                                ]}
-                            />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Notes Section */}
-                    <Text>Notes</Text>
-                    <TextInput
-                        style={styles.textBox}
-                        multiline
-                        placeholder="Write your notes here..."
-                        value={notes}
-                        onChangeText={(text) => setNotes(text)} 
-                    />
-                </View>
-
-                {/* Fitness Section */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Fitness</Text>
-                    {tasks.map(task => (
-                        <View key={task.id} style={styles.taskContainer}>
-                            <Checkbox
-                                value={task.completed}
-                                onValueChange={() => toggleTask(task.id)}
-                                style={styles.checkbox}
-                            />
-                            <Text style={[styles.taskText, task.completed && styles.strikeThrough]}>
-                                {task.title}
-                            </Text>
+                {/* Conditionally render Mood Section based on global toggle */}
+                {isMoodEnabled && (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Mood</Text>
+                        <View style={styles.moodOptions}>
+                            <TouchableOpacity onPress={() => setSelectedMood('VeryHappy')}>
+                                <Image 
+                                    source={require('../icons/5.png')} 
+                                    style={[
+                                        styles.icon, 
+                                        selectedMood === 'VeryHappy' && styles.selectedIcon
+                                    ]}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setSelectedMood('Happy')}>
+                                <Image 
+                                    source={require('../icons/4.png')} 
+                                    style={[
+                                        styles.icon, 
+                                        selectedMood === 'Happy' && styles.selectedIcon
+                                    ]}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setSelectedMood('Neutral')}>
+                                <Image 
+                                    source={require('../icons/3.png')} 
+                                    style={[
+                                        styles.icon, 
+                                        selectedMood === 'Neutral' && styles.selectedIcon
+                                    ]}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setSelectedMood('Sad')}>
+                                <Image 
+                                    source={require('../icons/2.png')} 
+                                    style={[
+                                        styles.icon, 
+                                        selectedMood === 'Sad' && styles.selectedIcon
+                                    ]}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setSelectedMood('VerySad')}>
+                                <Image 
+                                    source={require('../icons/1.png')} 
+                                    style={[
+                                        styles.icon, 
+                                        selectedMood === 'VerySad' && styles.selectedIcon
+                                    ]}
+                                />
+                            </TouchableOpacity>
                         </View>
-                    ))}
-                </View>
 
-                {/* Meal Section */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Ingredients Consumed Today</Text>
-                    {ing.map(item => (
-                        <View key={item.id} style={styles.taskContainer}>
-                            <Checkbox
-                                value={item.completed}
-                                onValueChange={() => toggleIng(item.id)}
-                                style={styles.checkbox}
-                            />
-                            <Text style={[styles.taskText, item.completed && styles.strikeThrough]}>
-                                {item.title}
-                            </Text>
-                        </View>
-                    ))}
-                </View>
-
-                {/* Menstrual Section */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Menstrual</Text>
-                    <View style={styles.menstrualOptions}>
-                        <TouchableOpacity
-                            style={[
-                                styles.radioButton,
-                                menstrualSelection === 'Yes' && styles.selectedRadioButton,
-                            ]}
-                            onPress={() => setMenstrualSelection('Yes')}
-                        >
-                            <Text>Yes</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[
-                                styles.radioButton,
-                                menstrualSelection === 'No' && styles.selectedRadioButton,
-                            ]}
-                            onPress={() => setMenstrualSelection('No')}
-                        >
-                            <Text>No</Text>
-                        </TouchableOpacity>
+                        {/* Notes Section */}
+                        <Text>Notes</Text>
+                        <TextInput
+                            style={styles.textBox}
+                            multiline
+                            placeholder="Write your notes here..."
+                            value={notes}
+                            onChangeText={(text) => setNotes(text)} 
+                        />
                     </View>
-                </View>
+                )}
 
-                {/*add back and next buttons */}
+                {/* Conditionally render Fitness Section based on global toggle */}
+                {isFitnessEnabled && (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Fitness</Text>
+                        {tasks.map(task => (
+                            <View key={task.id} style={styles.taskContainer}>
+                                <Checkbox
+                                    value={task.completed}
+                                    onValueChange={() => toggleTask(task.id)}
+                                    style={styles.checkbox}
+                                />
+                                <Text style={[styles.taskText, task.completed && styles.strikeThrough]}>
+                                    {task.title}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                )}
+
+                {/* Conditionally render Meal Section based on global toggle */}
+                {isMealEnabled && (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Ingredients Consumed Today</Text>
+                        {ing.map(item => (
+                            <View key={item.id} style={styles.taskContainer}>
+                                <Checkbox
+                                    value={item.completed}
+                                    onValueChange={() => toggleIng(item.id)}
+                                    style={styles.checkbox}
+                                />
+                                <Text style={[styles.taskText, item.completed && styles.strikeThrough]}>
+                                    {item.title}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                )}
+
+                {/* Conditionally render Menstrual Section based on global toggle */}
+                {isMenstrualEnabled && (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Menstrual</Text>
+                        <View style={styles.menstrualOptions}>
+                            <TouchableOpacity
+                                style={[
+                                    styles.radioButton,
+                                    menstrualSelection === 'Yes' && styles.selectedRadioButton,
+                                ]}
+                                onPress={() => setMenstrualSelection('Yes')}
+                            >
+                                <Text>Yes</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[
+                                    styles.radioButton,
+                                    menstrualSelection === 'No' && styles.selectedRadioButton,
+                                ]}
+                                onPress={() => setMenstrualSelection('No')}
+                            >
+                                <Text>No</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+
+                {/* Add back and next buttons */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => alert('Coming soon')}>
                         <Text>Back</Text>
@@ -214,9 +231,6 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 5,
-    },
-    sectionMoodColor:{
-        backgroundColor : "#e5c183"
     },
     sectionTitle: {
         fontSize: 18,
@@ -273,7 +287,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedRadioButton: {
-        backgroundColor: 'blue',  // Change background color to indicate selection
+        backgroundColor: 'blue',  // Change
     },
     radioText: {
         color: 'white',  // White text for better contrast when selected
