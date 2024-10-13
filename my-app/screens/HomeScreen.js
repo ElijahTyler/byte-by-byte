@@ -1,6 +1,8 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView } from 'react-native';
 import Checkbox from 'expo-checkbox';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { deleteData, loadFitnessToDo, loadMeal } from './database'; // Import the deleteData function
 import { SettingsContext } from './SettingsContext';  // Import SettingsContext
 
 export default function HomeScreen() {
@@ -12,26 +14,13 @@ export default function HomeScreen() {
         isFitnessEnabled
     } = useContext(SettingsContext);
 
-    // State for tasks
-    const [tasks, setTasks] = useState([
-        { id: 1, title: 'Take a walk', completed: false },
-        { id: 2, title: 'Run for 3 miles', completed: false },
-        { id: 3, title: 'Bicep curls 15 reps', completed: false }
-    ]);
+    const [selectedDate, setSelectedDate] = useState(new Date());  // State for the currently selected date
 
-    // State for ingredients
-    const [ing, setIng] = useState([
-        { id: 1, title: 'milk', completed: false },
-        { id: 2, title: 'bread', completed: false },
-        { id: 3, title: 'eggs', completed: false }
-    ]);
-
-    // Function to toggle task completion
-    const toggleTask = (id) => {
-        setTasks(tasks.map(task =>
-            task.id === id ? { ...task, completed: !task.completed } : task
-        ));
-    };
+    const formatDate = (date) => date.toISOString().split('T')[0];  // Helper function to format date to 'YYYY-MM-DD'
+    
+    // State for tasks and ingredients
+    const [tasks, setTasks] = useState([]);
+    const [ingredients, setIngredients] = useState([]);
 
     // State for mood selection
     const [selectedMood, setSelectedMood] = useState(null);  // Track selected mood
@@ -40,11 +29,57 @@ export default function HomeScreen() {
     // State for menstrual section selection
     const [menstrualSelection, setMenstrualSelection] = useState(null);  // Track Yes or No
 
-    // Function to toggle the ingredients consumed today
-    const toggleIng = (id) => {
-        setIng(ing.map(item =>
-            item.id === id ? { ...item, completed: !item.completed } : item
+    // Fetch data based on selectedDate
+    useEffect(() => {
+        const initializeApp = async () => {
+            const formattedDate = formatDate(selectedDate);  // Format selectedDate as 'YYYY-MM-DD'
+            const isFirstRun = await AsyncStorage.getItem('isFirstRun');
+
+            if (!isFirstRun) {
+                // First run: call deleteData to reset the data and insert defaults
+                await deleteData(formattedDate);
+
+                // Set the flag so this doesn't happen again
+                await AsyncStorage.setItem('isFirstRun', 'true');
+            }
+
+            // Fetch tasks and ingredients for the selected day
+            const loadedTasks = await loadFitnessToDo(formattedDate);
+            setTasks(loadedTasks);
+
+            const loadedIngredients = await loadMeal(formattedDate);
+            setIngredients(loadedIngredients);
+        };
+
+        initializeApp(); // Call the initialization function
+    }, [selectedDate]);  // Re-fetch tasks and ingredients whenever the selectedDate changes
+
+    // Function to toggle task completion
+    const toggleTask = (id) => {
+        setTasks(tasks.map(task =>
+            task.id === id ? { ...task, completed: !task.completed } : task
         ));
+    };
+
+    // Function to toggle the ingredients consumed today
+    const toggleIngredient = (id) => {
+        setIngredients(ingredients.map(item =>
+            item.id === id ? { ...item, consumed: !item.consumed } : item
+        ));
+    };
+
+    // Function to handle moving to the previous day (yesterday)
+    const goToYesterday = () => {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(selectedDate.getDate() - 1);  // Subtract 1 day
+        setSelectedDate(newDate);  // Update selectedDate
+    };
+
+    // Function to handle moving to the next day (tomorrow)
+    const goToTomorrow = () => {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(selectedDate.getDate() + 1);  // Add 1 day
+        setSelectedDate(newDate);  // Update selectedDate
     };
 
     return (
@@ -52,7 +87,9 @@ export default function HomeScreen() {
             <View style={styles.homeContainer}>
                 {/* App header */}
                 <View style={styles.header}>
-                    <Text style={styles.title}>Hello👋 {"\n"}Today is Saturday, October 12th</Text>
+                    <Text style={styles.title}>
+                        Hello👋 {"\n"} Today is {selectedDate.toDateString()} {/* Display the selected date */}
+                    </Text>
                 </View>
 
                 {/* Conditionally render Mood Section based on global toggle */}
@@ -123,8 +160,9 @@ export default function HomeScreen() {
                 {isFitnessEnabled && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Fitness</Text>
-                        {tasks.map(task => (
-                            <View key={task.id} style={styles.taskContainer}>
+                        {tasks && tasks.length > 0 ? (
+                        tasks.map(task => (
+                                <View key={task.id} style={styles.taskContainer}>
                                 <Checkbox
                                     value={task.completed}
                                     onValueChange={() => toggleTask(task.id)}
@@ -133,8 +171,11 @@ export default function HomeScreen() {
                                 <Text style={[styles.taskText, task.completed && styles.strikeThrough]}>
                                     {task.title}
                                 </Text>
-                            </View>
-                        ))}
+                                </View>
+                            ))
+                        ) : (
+                        <Text>No tasks available for today.</Text>  // Optional message if no tasks exist
+                        )}
                     </View>
                 )}
 
@@ -142,15 +183,15 @@ export default function HomeScreen() {
                 {isMealEnabled && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Ingredients Consumed Today</Text>
-                        {ing.map(item => (
+                        {ingredients.map(item => (
                             <View key={item.id} style={styles.taskContainer}>
                                 <Checkbox
-                                    value={item.completed}
-                                    onValueChange={() => toggleIng(item.id)}
+                                    value={item.consumed}
+                                    onValueChange={() => toggleIngredient(item.id)}
                                     style={styles.checkbox}
                                 />
-                                <Text style={[styles.taskText, item.completed && styles.strikeThrough]}>
-                                    {item.title}
+                                <Text style={[styles.taskText, item.consumed && styles.strikeThrough]}>
+                                    {item.ingredient}
                                 </Text>
                             </View>
                         ))}
@@ -185,13 +226,13 @@ export default function HomeScreen() {
                     </View>
                 )}
 
-                {/* Add back and next buttons */}
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => alert('Coming soon')}>
-                        <Text>Back</Text>
+                {/* Add Yesterday and Tomorrow buttons */}
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity onPress={goToYesterday}>
+                        <Text>Yesterday</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => alert('Coming soon')}>
-                        <Text>Next</Text>
+                    <TouchableOpacity onPress={goToTomorrow}>
+                        <Text>Tomorrow</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -203,7 +244,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        textAlign: 'center',
+        textAlign: 'center',  // Center the text horizontally
         marginBottom: 20,
     },
     scrollView: {
@@ -217,10 +258,14 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     header: {
+        justifyContent: 'center',  // Center content vertically
+        alignItems: 'center',      // Center content horizontally
+        marginBottom: 20,
+    },
+    buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
+        marginVertical: 20,
     },
     section: {
         backgroundColor: '#fff',

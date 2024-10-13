@@ -1,9 +1,31 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const deleteData = async () => {
+// Function to clear all data and add default values
+export const deleteData = async (date) => {
   // Clear all data from AsyncStorage
   await AsyncStorage.clear();
-}
+
+  // Default tasks and ingredients
+  const defaultTasks = [
+    { id: 1, title: 'Take a walk', completed: false },
+    { id: 2, title: 'Run for 3 miles', completed: false },
+    { id: 3, title: 'Bicep curls 15 reps', completed: false }
+  ];
+
+  const defaultIngredients = [
+    { id: 1, ingredient: 'milk', consumed: false },
+    { id: 2, ingredient: 'bread', consumed: false },
+    { id: 3, ingredient: 'eggs', consumed: false }
+  ];
+
+  // Save default tasks to the database for the given date
+  await saveFitnessToDo(date, defaultTasks);
+
+  // Save default ingredients to the database for the given date
+  await saveMeal(date, defaultIngredients);
+
+  console.log('Data cleared and default values added');
+};
 
 /** 
  * DayContents: Stores mood, menstrual, fitness, and meal information for a specific day.
@@ -111,7 +133,7 @@ export const saveFitnessToDo = async (dayOfWeek, tasks) => {
 
 export const loadFitnessToDo = async (dayOfWeek) => {
   const fitnessData = await AsyncStorage.getItem(`fitness_${dayOfWeek}`);
-  return fitnessData != null ? JSON.parse(fitnessData) : null;
+  return fitnessData != null ? JSON.parse(fitnessData) : [];
 };
 
 /**
@@ -121,18 +143,17 @@ export const loadFitnessToDo = async (dayOfWeek) => {
  * @param {Array} meals - Array of meal items (e.g., [{ item: 'Chicken', eaten: true }]).
  * @param {boolean} eaten - Whether the meal was eaten or not.
  */
-export const saveMeal = async (dayOfWeek, meals, eaten) => {
+export const saveMeal = async (date, ingredients) => {
   const mealData = {
-    dayOfWeek,
-    meals,
-    eaten
+    date, // Store meal for a specific date
+    ingredients, // Array of ingredients, e.g., [{ ingredient: 'Eggs', consumed: false }]
   };
-  await AsyncStorage.setItem(`meal_${dayOfWeek}`, JSON.stringify(mealData));
+  await AsyncStorage.setItem(`meal_${date}`, JSON.stringify(mealData));
 };
 
-export const loadMeal = async (dayOfWeek) => {
-  const mealData = await AsyncStorage.getItem(`meal_${dayOfWeek}`);
-  return mealData != null ? JSON.parse(mealData) : null;
+export const loadMeal = async (date) => {
+  const mealData = await AsyncStorage.getItem(`meal_${date}`);
+  return mealData != null ? JSON.parse(mealData).ingredients : []; // Return ingredients array or empty array
 };
 
 /**
