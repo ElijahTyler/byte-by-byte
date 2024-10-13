@@ -2,12 +2,20 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView, Button } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { deleteData, loadFitnessToDo, loadMeal, saveMood, loadMood, saveMenstrual, loadMenstrual } from './database';  // Import loadMood and saveMood functions
+import { deleteData, saveDayContents, loadDayContents, saveMood, loadMood, saveMenstrual, loadMenstrual, saveRoutineWeek, loadRoutineWeek, saveFitnessToDo, loadFitnessToDo, saveMeal, loadMeal, loadMoodsForMonth } from './database';
 import { SettingsContext } from './SettingsContext';  // Import SettingsContext
 
 export default function HomeScreen() {
     // Use the SettingsContext to get the global toggle states
-    const {
+    
+    const handleSaveMenstrual = (selection) => {
+        const formattedDate = formatDate(selectedDate);
+        saveMenstrual(formattedDate, selection)
+          .then(() => console.log(`Menstrual data saved for ${formattedDate}: ${selection}`))
+          .catch(error => console.error('Error saving menstrual data:', error));
+    };
+    
+const {
         isMoodEnabled,
         isMenstrualEnabled,
         isMealEnabled,
