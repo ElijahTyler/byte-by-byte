@@ -13,9 +13,19 @@ export const deleteData = async (date) => {
   ];
 
   const defaultIngredients = [
-    { id: 1, ingredient: 'milk', consumed: false },
-    { id: 2, ingredient: 'bread', consumed: false },
-    { id: 3, ingredient: 'eggs', consumed: false }
+    { id: 1, ingredient: 'Dairy', consumed: false },
+    { id: 2, ingredient: 'gluten', consumed: false },
+    { id: 3, ingredient: 'eggs', consumed: false },
+    { id: 4, ingredient: 'soy', consumed: false },
+    { id: 5, ingredient: 'shellfish', consumed: false },
+    { id: 6, ingredient: 'nuts', consumed: false },
+    { id: 7, ingredient: 'fish', consumed: false },
+    { id: 8, ingredient: 'wheat', consumed: false },
+    { id: 9, ingredient: 'corn', consumed: false },
+    { id: 10, ingredient: 'sugar', consumed: false },
+    { id: 11, ingredient: 'alcohol', consumed: false },
+    { id: 12, ingredient: 'caffeine', consumed: false },
+    { id: 13, ingredient: 'salt', consumed: false }
   ];
 
   // Save default tasks to the database for the given date
