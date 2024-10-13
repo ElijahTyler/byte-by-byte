@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Dimensions } from 'react-native';
+import getMoodData from '../database';  // Import getMoodData
 
 // Get the screen width to calculate day box sizes
 const screenWidth = Dimensions.get('window').width;
@@ -17,16 +18,12 @@ export default function MonthViewScreen() {
   const [daysInMonth, setDaysInMonth] = useState([]);
   const [monthTitle, setMonthTitle] = useState('');
 
-  const moodData = { // eventually will come from database! :D
-    1: 3,
-    2: 2,
-    12: 5,
-    15: 1,
-  };
-
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
+
+  // get all mood data from current month of current year
+  const moodData = getMoodData(currentYear, currentMonth);
 
   useEffect(() => {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
