@@ -3,28 +3,30 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView,
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { deleteData, saveDayContents, loadDayContents, saveMood, loadMood, saveMenstrual, loadMenstrual, saveRoutineWeek, loadRoutineWeek, saveFitnessToDo, loadFitnessToDo, saveMeal, loadMeal, loadMoodsForMonth } from './database';
-import { SettingsContext } from './SettingsContext';  // Import SettingsContext
+import { SettingsContext } from './SettingsContext';
+import { FlatList } from 'react-native-gesture-handler';
 
 export default function HomeScreen() {
     // Use the SettingsContext to get the global toggle states
-    
-const handleSaveMenstrual = async (selection) => {
-    const formattedDate = formatDate(selectedDate);
-    console.log(`Saving menstrual data for date: ${formattedDate}`);
-    try {
-        await saveMenstrual(formattedDate, selection);
-        console.log(`Menstrual data saved for ${formattedDate}: ${selection}`);
-    } catch (error) {
-        console.error('Error saving menstrual data:', error);
-    }
-};
-    
-const {
+    const {
         isMoodEnabled,
         isMenstrualEnabled,
         isMealEnabled,
         isFitnessEnabled
     } = useContext(SettingsContext);
+
+    const handleSaveMenstrual = async (selection) => {
+        const formattedDate = formatDate(selectedDate);
+        console.log(`Saving menstrual data for date: ${formattedDate}`);
+        try {
+            await saveMenstrual(formattedDate, selection);
+            console.log(`Menstrual data saved for ${formattedDate}: ${selection}`);
+        } catch (error) {
+            console.error('Error saving menstrual data:', error);
+        }
+    };
+    
+
 
     const [selectedDate, setSelectedDate] = useState(new Date());  // State for the currently selected date
     const formatDate = (date) => date.toISOString().split('T')[0];  // Helper function to format date to 'YYYY-MM-DD'
@@ -53,6 +55,42 @@ const {
         };
         loadMenstrualData();  // Call the function whenever the selectedDate changes
     }, [selectedDate]);  // Re-run this effect every time the selected date changes
+    
+    // All of the stuff for meal 
+    // Load meal data whenever the selectedDate changes
+    useEffect(() => {
+        const loadMealData = async () => {
+            const loadedIngredients = await loadMeal(formattedDate); // Use formattedDate here
+            setIngredients(loadedIngredients);
+        };
+        
+        loadMealData();  // Call the function whenever selectedDate changes
+    }, [formattedDate]);  // Re-fetch ingredients whenever selectedDate changes
+
+    // Function to toggle the ingredients consumed today
+    const toggleIngredient = async (id) => {
+        const updatedIngredients = ingredients.map((item) => {
+            if (item.id === id) {
+                return { ...item, consumed: !item.consumed };
+            }
+            return item;
+        });
+        // Save the updated meal data
+        await saveMeal(formattedDate, updatedIngredients); // Use formattedDate here
+        setIngredients(updatedIngredients);
+    };
+
+    // Render an ingredient item
+    const renderItem = ({ item }) => (
+        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+            <Checkbox
+                value={item.consumed}
+                onValueChange={() => toggleIngredient(item.id)}
+            />
+            <Text>{item.ingredient}</Text>
+        </View>
+    );
+
 
     // Fetch tasks, ingredients, mood, and notes whenever the selectedDate changes
     useEffect(() => {
@@ -70,10 +108,6 @@ const {
             // Fetch tasks and ingredients for the selected day
             const loadedTasks = await loadFitnessToDo(formattedDate);
             setTasks(loadedTasks);
-
-            const loadedIngredients = await AsyncStorage.getItem('ingredients_list');
-            const parsedIngredients = loadedIngredients ? JSON.parse(loadedIngredients) : [];
-            setIngredients(parsedIngredients);
 
             // Fetch the mood and notes for the selected day
             const moodData = await loadMood(formattedDate);
@@ -113,15 +147,6 @@ const {
         ));
     };
 
-    // Function to toggle the ingredients consumed today
-    const toggleIngredient = async (id) => {
-        const updatedIngredients = ingredients.map(item =>
-            item.id === id ? { ...item, consumed: !item.consumed } : item  // Only update the item with the matching id
-        );
-        setIngredients(updatedIngredients);
-        await AsyncStorage.setItem('ingredients_list', JSON.stringify(updatedIngredients));  // Save updated ingredients
-    };
-
     // Function to handle moving to the previous day (yesterday)
     const goToYesterday = () => {
         const newDate = new Date(selectedDate);
@@ -135,7 +160,7 @@ const {
         newDate.setDate(selectedDate.getDate() + 1);  // Add 1 day
         setSelectedDate(newDate);  // Update selectedDate
     };
-
+    
     return (
         <ScrollView style={styles.scrollView}>
             <View style={styles.homeContainer}>
@@ -212,7 +237,7 @@ const {
                         />
                         {/* Save Button */}
                         <View style={styles.buttonContainer}>
-                            <Button title="Save Mood and Notes" onPress={handleSaveMood} />
+                            <Button  color='#2E4052' title="Save Mood and Notes" onPress={handleSaveMood} />
                         </View>
                     </View>
                 )}
@@ -244,18 +269,12 @@ const {
                 {isMealEnabled && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}><Image source={require('../icons/meal.png')} style={styles.section_icon} /> Ingredients Consumed Today</Text>
-                        {ingredients.map(item => (
-                            <View key={item.id} style={styles.taskContainer}>
-                                <Checkbox
-                                    value={item.consumed}
-                                    onValueChange={() => toggleIngredient(item.id)}
-                                    style={styles.checkbox}
-                                />
-                                <Text style={[styles.taskText, item.consumed && styles.strikeThrough]}>
-                                    {item.ingredient}
-                                </Text>
-                            </View>
-                        ))}
+                        <FlatList
+                            data={ingredients}
+                            renderItem={renderItem}
+                            keyExtractor={(item) => item.id.toString()}
+                        />
+                    
                     </View>
                 )}
 
@@ -313,6 +332,7 @@ const {
 }
 
 const styles = StyleSheet.create({
+
     title: {
         fontSize: 24,
         fontWeight: 'bold',
@@ -356,6 +376,7 @@ const styles = StyleSheet.create({
     },
     button: {        
         marginVertical: 20,
+        color: '#2E4052'
     },
     section: {
         backgroundColor: '#fff',
@@ -422,7 +443,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedRadioButton: {
-        backgroundColor: '#d3d3d3',  // Grey background for selected button
+        backgroundColor: '#b8d8ba',  // Grey background for selected button
     },
     section_icon: {
         width: 24,

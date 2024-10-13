@@ -147,16 +147,16 @@ export const loadFitnessToDo = async (dayOfWeek) => {
  * @param {Array} meals - Array of meal items (e.g., [{ item: 'Chicken', eaten: true }]).
  * @param {boolean} eaten - Whether the meal was eaten or not.
  */
-export const saveMeal = async (date, ingredients) => {
+export const saveMeal = async (id, ingredients) => {
   const mealData = {
-    date, // Store meal for a specific date
+    id, // Store meal for a specific date
     ingredients, // Array of ingredients, e.g., [{ ingredient: 'Eggs', consumed: false }]
   };
-  await AsyncStorage.setItem(`meal_${date}`, JSON.stringify(mealData));
+  await AsyncStorage.setItem(`meal_${id}`, JSON.stringify(mealData));
 };
 
-export const loadMeal = async (date) => {
-  const mealData = await AsyncStorage.getItem(`meal_${date}`);
+export const loadMeal = async (id) => {
+  const mealData = await AsyncStorage.getItem(`meal_${id}`);
   return mealData != null ? JSON.parse(mealData).ingredients : []; // Return ingredients array or empty array
 };
 
