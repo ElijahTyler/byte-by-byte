@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TextInput, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { saveMeal, loadMeal } from './database'; // Import your database functions
+import { MaterialIcons } from '@expo/vector-icons'; // For delete icon
 
 const MealAdd = ({ date }) => {
   const [ingredient, setIngredient] = useState('');
@@ -37,6 +38,18 @@ const MealAdd = ({ date }) => {
     }
   };
 
+  // Handle deleting an ingredient from the list
+  const deleteIngredient = async (index) => {
+    const updatedIngredients = ingredients.filter((_, i) => i !== index);
+    setIngredients(updatedIngredients);
+    try {
+      await saveMeal(date, updatedIngredients); // Save the updated ingredient list
+      console.log(`Deleted ingredient at index ${index} for ${date}`);
+    } catch (error) {
+      console.error(`Error deleting ingredient for ${date}:`, error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Add Ingredients you are watching for</Text>
@@ -58,9 +71,12 @@ const MealAdd = ({ date }) => {
       <FlatList
         data={ingredients}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <View style={styles.ingredientContainer}>
             <Text style={styles.ingredientText}>{item.ingredient}</Text>
+            <TouchableOpacity onPress={() => deleteIngredient(index)}>
+              <MaterialIcons name="delete" size={24} color="red" />
+            </TouchableOpacity>
           </View>
         )}
         ListEmptyComponent={<Text style={styles.emptyListText}>No ingredients added yet.</Text>}
@@ -114,6 +130,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   ingredientContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 15,
     backgroundColor: '#fff',
     borderRadius: 10,
