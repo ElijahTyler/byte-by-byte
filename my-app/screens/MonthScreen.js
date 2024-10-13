@@ -1,81 +1,120 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Dimensions } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';  // Import useFocusEffect
-import { loadMoodsForMonth } from './database';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Dimensions } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; // Import navigation hook
+import { loadMoodsForMonth } from './database'; // Import the function from database.js
 
-// Get the screen width to calculate day box sizes
 const screenWidth = Dimensions.get('window').width;
 
-const moodColors = {
-  1: '#ff9999',
-  2: '#ffcc99',
-  3: '#ffff99',
-  4: '#ccff99',
-  5: '#99ff99',
-};
-
-export default function MonthViewScreen() {
-  const [selectedDays, setSelectedDays] = useState({});
+const MonthScreen = () => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [daysInMonth, setDaysInMonth] = useState([]);
-  const [monthTitle, setMonthTitle] = useState('');
-  const [moodData, setMoodData] = useState({}); // State to store mood data
+  const [moodsByDay, setMoodsByDay] = useState({});
 
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth() + 1; // Get month in 'MM' format
+  const navigation = useNavigation(); // Initialize navigation
 
-  const formatDate = (date) => {
-      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);  // Adjust for time zone offset
-      return localDate.toISOString().split('T')[0];  // Get YYYY-MM-DD format without time
+  // Mood colors based on the mood scale
+  const moodColors = {
+    1: '#FF4C4C',  // Very Bad
+    2: '#FF9E4C',  // Bad
+    3: '#FFFF4C',  // Neutral
+    4: '#B4FF4C',  // Good
+    5: '#4CFF4C'   // Very Good
   };
 
-  // Fetch moods for the current month and store them in the state
-  const fetchMoodData = async () => {
-    const moods = await loadMoodsForMonth(currentYear.toString(), currentMonth.toString().padStart(2, '0'));
-  
-    console.log('Loaded moods:', moods);  // Log the loaded moods
-  
-    const moodMap = moods.reduce((acc, mood) => {
-      const day = parseInt(mood.date.split('-')[2], 10);  // Extract the day directly from the date string
-      console.log(`Mapping mood for day ${day} (raw date: ${mood.date}) to mood: ${mood.mood}`);
-      acc[day] = mood.mood;
-      return acc;
-    }, {});
-  
-    setMoodData(moodMap);
-  };  
+  // Helper function to get the number of days in the current month, padded to align with weekdays
+  const getDaysInMonth = (year, month) => {
+    const date = new Date(Date.UTC(year, month, 1)); // Ensure we create a UTC date to avoid timezone issues
+    const result = [];
 
-  useFocusEffect(
-    React.useCallback(() => {
-      // Fetch mood data whenever the screen is focused
-      fetchMoodData();
-    }, [])
-  );
+    // Get the day of the week of the first day in the month (0 = Sunday, 6 = Saturday)
+    const firstDayOfWeek = date.getUTCDay(); // Use UTC-based methods to avoid time zone shifts
 
-  // Calculate the number of days in the month and handle empty days at the start of the month
+    // Pad the empty spaces before the first day of the month
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      result.push(null);
+    }
+
+    // Add all the days of the month
+    while (date.getUTCMonth() === month) {
+      result.push(new Date(date).getUTCDate()); // Always use UTC methods
+      date.setUTCDate(date.getUTCDate() + 1);   // Increment the day
+    }
+
+    return result;
+  };
+
+  // Updates the days in the month and loads moods when the month changes
   useEffect(() => {
-    const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
-    const daysInCurrentMonth = new Date(currentYear, currentMonth, 0).getDate();
+    const year = currentMonth.getUTCFullYear();
+    const month = String(currentMonth.getUTCMonth() + 1).padStart(2, '0'); // Ensure month is 2 digits and UTC
+    const days = getDaysInMonth(year, currentMonth.getUTCMonth());
+    setDaysInMonth(days);
 
-    const daysArray = Array.from({ length: firstDayOfMonth }, () => null)
-      .concat(Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1));
+    // Load moods for the month
+    const loadMoods = async () => {
+      const moods = await loadMoodsForMonth(year, month);
+      const moodsByDay = {};
 
-    setDaysInMonth(daysArray);
-    setMonthTitle(currentDate.toLocaleString('default', { month: 'long', year: 'numeric' }));
-  }, [currentYear, currentMonth]);
+      moods.forEach(({ date, mood }) => {
+        const day = new Date(date).getUTCDate(); // Extract day using UTC method to ensure correctness
+        moodsByDay[day] = mood;
+      });
 
-  // Get the background color for a day based on the mood data
-  const getMoodColor = (day) => {
-    const mood = moodData[day];
-    return mood ? moodColors[mood] : '#e0e0e0'; // Default color if no mood
+      setMoodsByDay(moodsByDay);
+    };
+
+    loadMoods();
+  }, [currentMonth]);
+
+  // Function to handle day click and navigate to HomeScreen
+  const handleDayClick = (day) => {
+    if (day) {
+      // Build the date in 'YYYY-MM-DD' format
+      const year = currentMonth.getUTCFullYear();
+      const month = String(currentMonth.getUTCMonth() + 1).padStart(2, '0');
+      const date = `${year}-${month}-${String(day).padStart(2, '0')}`;
+
+      // Navigate to HomeScreen and pass the selected date
+      navigation.navigate('HomeScreen', { selectedDate: date });
+    }
   };
 
-  const boxSize = screenWidth / 7 - 10;  // Divide screen width by 7, adjust for padding
+  // Function to increment the current month
+  const incrementMonth = () => {
+    setCurrentMonth((prevMonth) => {
+      let newMonth = new Date(prevMonth);
+      newMonth.setUTCMonth(newMonth.getUTCMonth() + 1); // Use UTC methods
+      return newMonth;
+    });
+  };
+
+  // Function to decrement the current month
+  const decrementMonth = () => {
+    setCurrentMonth((prevMonth) => {
+      let newMonth = new Date(prevMonth);
+      newMonth.setUTCMonth(newMonth.getUTCMonth() - 1); // Use UTC methods
+      return newMonth;
+    });
+  };
+
+  // Helper function to format the month title
+  const getMonthTitle = () => {
+    const options = { month: 'long', year: 'numeric' };
+    return currentMonth.toLocaleDateString(undefined, options);
+  };
+
+  // Get mood color based on the day (if mood exists)
+  const getMoodColor = (day) => {
+    const mood = moodsByDay[day];
+    return mood ? moodColors[mood] : 'transparent';
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Month Display</Text>
-      <Text style={styles.monthTitle}>{monthTitle}</Text>
+
+      {/* Month Title */}
+      <Text style={styles.monthTitle}>{getMonthTitle()}</Text>
 
       {/* Weekday Labels */}
       <View style={styles.weekRow}>
@@ -93,18 +132,29 @@ export default function MonthViewScreen() {
           <TouchableOpacity
             style={[
               styles.dayBox,
-              { backgroundColor: item ? getMoodColor(item) : 'transparent', width: boxSize, height: boxSize },
+              { backgroundColor: item ? getMoodColor(item) : 'transparent', width: screenWidth / 7 - 10, height: screenWidth / 7 - 10 },
             ]}
             disabled={!item}
+            onPress={() => handleDayClick(item)} // Handle day click
           >
             <Text style={styles.dayText}>{item || ''}</Text>
           </TouchableOpacity>
         )}
         contentContainerStyle={styles.calendarContainer}
       />
+
+      {/* Navigation Buttons at the Bottom */}
+      <View style={styles.navButtons}>
+        <TouchableOpacity onPress={decrementMonth}>
+          <Text style={styles.navButtonText}>Previous Month</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={incrementMonth}>
+          <Text style={styles.navButtonText}>Next Month</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -123,8 +173,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: 20,
-    marginBottom: 10,
+    marginBottom: 20,
   },
   weekRow: {
     flexDirection: 'row',
@@ -151,4 +200,19 @@ const styles = StyleSheet.create({
   dayText: {
     fontSize: 16,
   },
+  navButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    position: 'absolute',
+    bottom: 20,
+    paddingHorizontal: 20,
+  },
+  navButtonText: {
+    fontSize: 18,
+    color: '#007BFF',
+    fontWeight: 'bold',
+  },
 });
+
+export default MonthScreen;
