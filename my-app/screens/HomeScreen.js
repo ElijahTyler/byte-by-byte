@@ -8,12 +8,16 @@ import { SettingsContext } from './SettingsContext';  // Import SettingsContext
 export default function HomeScreen() {
     // Use the SettingsContext to get the global toggle states
     
-    const handleSaveMenstrual = (selection) => {
-        const formattedDate = formatDate(selectedDate);
-        saveMenstrual(formattedDate, selection)
-          .then(() => console.log(`Menstrual data saved for ${formattedDate}: ${selection}`))
-          .catch(error => console.error('Error saving menstrual data:', error));
-    };
+const handleSaveMenstrual = async (selection) => {
+    const formattedDate = formatDate(selectedDate);
+    console.log(`Saving menstrual data for date: ${formattedDate}`);
+    try {
+        await saveMenstrual(formattedDate, selection);
+        console.log(`Menstrual data saved for ${formattedDate}: ${selection}`);
+    } catch (error) {
+        console.error('Error saving menstrual data:', error);
+    }
+};
     
 const {
         isMoodEnabled,
@@ -33,7 +37,22 @@ const {
     const [notes, setNotes] = useState('');  // Track notes
 
     // State for menstrual section selection
-    const [menstrualSelection, saveMenstrual] = useState(null);  // Track Yes or No
+    const [menstrualSelection, setMenstrualSelection] = useState(null);
+
+    // Load menstrual data when selectedDate changes
+    useEffect(() => {
+        const loadMenstrualData = async () => {
+            const formattedDate = formatDate(selectedDate);
+            const savedMenstrual = await loadMenstrual(formattedDate);
+            console.log('Loaded menstrual data:', savedMenstrual);
+            if (savedMenstrual && savedMenstrual.isMenstruating) {
+                setMenstrualSelection(savedMenstrual.isMenstruating);  // Update the state with the saved data
+            } else {
+                setMenstrualSelection(null);  // Clear the state if no data exists for the day
+            }
+        };
+        loadMenstrualData();  // Call the function whenever the selectedDate changes
+    }, [selectedDate]);  // Re-run this effect every time the selected date changes
 
     // Fetch tasks, ingredients, mood, and notes whenever the selectedDate changes
     useEffect(() => {
@@ -144,39 +163,39 @@ const {
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setSelectedMood('Happy')}>
+                            <TouchableOpacity onPress={() => setSelectedMood(4)}>
                                 <Image 
                                     source={require('../icons/4.png')} 
                                     style={[
                                         styles.icon, 
-                                        selectedMood === 'Happy' && styles.selectedIcon
+                                        selectedMood === 4 && styles.selectedIcon
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setSelectedMood('Neutral')}>
+                            <TouchableOpacity onPress={() => setSelectedMood(3)}>
                                 <Image 
                                     source={require('../icons/3.png')} 
                                     style={[
                                         styles.icon, 
-                                        selectedMood === 'Neutral' && styles.selectedIcon
+                                        selectedMood === 3 && styles.selectedIcon
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setSelectedMood('Sad')}>
+                            <TouchableOpacity onPress={() => setSelectedMood(2)}>
                                 <Image 
                                     source={require('../icons/2.png')} 
                                     style={[
                                         styles.icon, 
-                                        selectedMood === 'Sad' && styles.selectedIcon
+                                        selectedMood === 2 && styles.selectedIcon
                                     ]}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setSelectedMood('VerySad')}>
+                            <TouchableOpacity onPress={() => setSelectedMood(1)}>
                                 <Image 
                                     source={require('../icons/1.png')} 
                                     style={[
                                         styles.icon, 
-                                        selectedMood === 'VerySad' && styles.selectedIcon
+                                        selectedMood === 1 && styles.selectedIcon
                                     ]}
                                 />
                             </TouchableOpacity>
@@ -248,11 +267,11 @@ const {
                             <TouchableOpacity
                                 style={[
                                     styles.radioButton,
-                                    menstrualSelection === 'Yes' && styles.selectedRadioButton,
+                                    menstrualSelection === 'Yes' ? styles.selectedRadioButton : null,
                                 ]}
                                 onPress={async () => {
-                                    saveMenstrual('Yes');
-                                    await saveMenstrual(formattedDate, 'Yes');  // Auto-save when Yes is selected
+                                    setMenstrualSelection('Yes');
+                                    handleSaveMenstrual('Yes');
                                 }}
                             >
                                 <Text>Yes</Text>
@@ -261,11 +280,11 @@ const {
                             <TouchableOpacity
                                 style={[
                                     styles.radioButton,
-                                    menstrualSelection === 'No' && styles.selectedRadioButton,
+                                    menstrualSelection === 'No' ? styles.selectedRadioButton : null,
                                 ]}
                                 onPress={async () => {
-                                    saveMenstrual('No');
-                                    await saveMenstrual(formattedDate, 'No');  // Auto-save when No is selected
+                                    setMenstrualSelection('No'); 
+                                    handleSaveMenstrual('No');
                                 }}
                             >
                                 <Text>No</Text>
@@ -316,6 +335,26 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginVertical: 20,
+    },
+    yesterdayButton: {
+        flex: 1,
+        alignItems: 'flex-start',
+        paddingHorizontal: 20,
+    },
+    todayButton: {
+        flex: 1,
+        alignItems: 'center',
+        paddingHorizontal: 20,
+    },
+    tomorrowButton: {
+        flex: 1,
+        alignItems: 'flex-end',
+        paddingHorizontal: 20,
+    },
+    button: {        
         marginVertical: 20,
         alignItems: 'center',
     },
@@ -384,15 +423,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedRadioButton: {
-        backgroundColor: '#b8d8ba',  // Change
-    },
-    radioText: {
-        color: 'white',  // White text for better contrast when selected
-        fontWeight: 'bold',
+        backgroundColor: '#d3d3d3',  // Grey background for selected button
     },
     section_icon: {
         width: 24,
         height: 24,
         //marginHorizontal: 10,  // Adjust spacing between icons
-      },
+    },
 });
