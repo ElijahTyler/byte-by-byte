@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView, Button } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { deleteData, saveDayContents, loadDayContents, saveMood, loadMood, saveMenstrual, loadMenstrual, saveRoutineWeek, loadRoutineWeek, saveFitnessToDo, loadFitnessToDo, saveMeal, loadMeal, loadMoodsForMonth } from './database';
+import { deleteData, saveDayContents, loadDayContents, saveMood, loadMood, saveMenstrual, loadMenstrual, saveRoutineWeek, loadRoutineWeek, saveFitnessToDo, loadFitnessToDo, saveMeal, loadMeal, loadMoodsForMonth, saveMealStatus } from './database';
 import { SettingsContext } from './SettingsContext';
 import { FlatList } from 'react-native-gesture-handler';
 
@@ -84,10 +84,11 @@ export default function HomeScreen() {
     const renderItem = ({ item }) => (
         <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
             <Checkbox
+                color={'#2E4052'}
                 value={item.consumed}
                 onValueChange={() => toggleIngredient(item.id)}
             />
-            <Text>{item.ingredient}</Text>
+            <Text>  {item.ingredient}</Text>
         </View>
     );
 
@@ -109,6 +110,9 @@ export default function HomeScreen() {
             const loadedTasks = await loadFitnessToDo(formattedDate);
             setTasks(loadedTasks);
 
+            //Fetch the ingredients for the selected day
+            const loadedIngredients = await loadMeal(formattedDate);
+            setIngredients(loadedIngredients);
             // Fetch the mood and notes for the selected day
             const moodData = await loadMood(formattedDate);
             if (moodData) {

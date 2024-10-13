@@ -8,6 +8,7 @@ import CrisisScreen from './screens/CrisisScreen';  // Import CrisisScreen
 import MonthScreen from './screens/MonthScreen';  // Import MonthScreen
 import FitnessSet from './screens/FitnessSet';
 import MealAdd from './screens/MealAdd';
+import { MealProvider } from './screens/mealContext';
 import { SettingsProvider } from './screens/SettingsContext';
 
 
@@ -43,6 +44,7 @@ function CustomHeader({ navigation }) {
 export default function App() {
   return (
     <SettingsProvider>
+      <MealProvider>
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Home"
@@ -60,6 +62,7 @@ export default function App() {
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>
+    </MealProvider>
     </SettingsProvider>
   );
 }
